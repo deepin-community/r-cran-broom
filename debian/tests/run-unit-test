@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+pkgname=broom
+debname=r-cran-broom
+
+if [ "$AUTOPKGTEST_TMP" = "" ] ; then
+    AUTOPKGTEST_TMP=`mktemp -d /tmp/${debname}-test.XXXXXX`
+    trap "rm -rf $AUTOPKGTEST_TMP" 0 INT QUIT ABRT PIPE TERM
+fi
+cd $AUTOPKGTEST_TMP
+cp -a /usr/share/doc/$debname/tests/* $AUTOPKGTEST_TMP
+gunzip -r *
+for testfile in *.R; do
+    echo "BEGIN TEST $testfile"
+    LC_ALL=C R --no-save < $testfile
+done
+

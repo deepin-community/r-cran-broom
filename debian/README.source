@@ -1,0 +1,10 @@
+Explanation for binary files inside source package according to
+  http://lists.debian.org/debian-devel/2013/09/msg00332.html
+
+Files: inst/extdata/rstan_example.rda
+Documented: man/mcmc_tidiers.Rd
+  Object code saved from Using example from "RStan Getting Started"
+  https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started
+
+
+ -- Andreas Tille <tille@debian.org>  Fri, 12 Jan 2018 12:20:19 +0100

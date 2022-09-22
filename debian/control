@@ -1,0 +1,40 @@
+Source: r-cran-broom
+Maintainer: Debian R Packages Maintainers <r-pkg-team@alioth-lists.debian.net>
+Uploaders: Andreas Tille <tille@debian.org>
+Section: gnu-r
+Testsuite: autopkgtest-pkg-r
+Priority: optional
+Build-Depends: debhelper-compat (= 13),
+               dh-r,
+               r-base-dev,
+               r-cran-backports,
+               r-cran-dplyr (>= 1.0.0),
+               r-cran-ellipsis,
+               r-cran-generics,
+               r-cran-glue,
+               r-cran-purrr,
+               r-cran-rlang,
+               r-cran-stringr,
+               r-cran-tibble (>= 3.0.0),
+               r-cran-tidyr (>= 1.0.0),
+               r-cran-ggplot2
+Standards-Version: 4.6.0
+Vcs-Browser: https://salsa.debian.org/r-pkg-team/r-cran-broom
+Vcs-Git: https://salsa.debian.org/r-pkg-team/r-cran-broom.git
+Homepage: https://cran.r-project.org/package=broom
+Rules-Requires-Root: no
+
+Package: r-cran-broom
+Architecture: all
+Depends: ${R:Depends},
+         ${misc:Depends}
+Recommends: ${R:Recommends}
+Suggests: ${R:Suggests}
+Description: convert statistical analysis objects into tidy data frames with GNU R
+ Convert statistical analysis objects from R into tidy data frames,
+ so that they can more easily be combined, reshaped and otherwise processed
+ with tools like 'dplyr', 'tidyr' and 'ggplot2'. The package provides three
+ S3 generics: tidy, which summarizes a model's statistical findings such as
+ coefficients of a regression; augment, which adds columns to the original
+ data such as predictions, residuals and cluster assignments; and glance, which
+ provides a one-row summary of model-level statistics.

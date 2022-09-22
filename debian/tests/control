@@ -1,0 +1,3 @@
+Tests: run-unit-test
+Depends: @, r-cran-testthat, r-cran-mass
+Restrictions: allow-stderr
