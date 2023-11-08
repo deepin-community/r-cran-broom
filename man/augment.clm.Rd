@@ -36,10 +36,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Augment accepts a model object and a dataset and adds
@@ -69,27 +72,26 @@ cases, augment tries to reconstruct the original data based on the model
 object with varying degrees of success.
 
 The augmented dataset is always returned as a \link[tibble:tibble]{tibble::tibble} with the
-\strong{same number of rows} as the passed dataset. This means that the
-passed data must be coercible to a tibble. At this time, tibbles do not
-support matrix-columns. This means you should not specify a matrix
-of covariates in a model formula during the original model fitting
-process, and that \code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}} and
-\code{\link[survival:Surv]{survival::Surv()}} objects are not supported in input data. If you
-encounter errors, try explicitly passing a tibble, or fitting the original
-model on data in a tibble.
+\strong{same number of rows} as the passed dataset. This means that the passed
+data must be coercible to a tibble. If a predictor enters the model as part
+of a matrix of covariates, such as when the model formula uses
+\code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}}, or \code{\link[survival:Surv]{survival::Surv()}}, it is represented
+as a matrix column.
 
 We are in the process of defining behaviors for models fit with various
 \code{na.action} arguments, but make no guarantees about behavior when data is
 missing at this time.
 }
 \examples{
+\dontshow{if (rlang::is_installed("ordinal")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("ordinal", quietly = TRUE)) {
-
+# load libraries for models and data
 library(ordinal)
 
+# fit model
 fit <- clm(rating ~ temp * contact, data = wine)
 
+# summarize model fit with tidiers
 tidy(fit)
 tidy(fit, conf.int = TRUE, conf.level = 0.9)
 tidy(fit, conf.int = TRUE, conf.type = "Wald", exponentiate = TRUE)
@@ -98,12 +100,12 @@ glance(fit)
 augment(fit, type.predict = "prob")
 augment(fit, type.predict = "class")
 
+# ...and again with another model specification
 fit2 <- clm(rating ~ temp, nominal = ~contact, data = wine)
+
 tidy(fit2)
 glance(fit2)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \link{tidy}, \code{\link[ordinal:clm]{ordinal::clm()}}, \code{\link[ordinal:predict]{ordinal::predict.clm()}}

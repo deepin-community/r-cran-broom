@@ -15,10 +15,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -29,36 +32,45 @@ If a model has several distinct types of components, you will need to
 specify which components to return.
 }
 \examples{
+\dontshow{if (rlang::is_installed("mclust")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("mclust", quietly = TRUE)) {
-
-library(dplyr)
+# load library for models and data
 library(mclust)
+
+# load data manipulation libraries
+library(dplyr)
+library(tibble)
+library(purrr)
+library(tidyr)
+
 set.seed(27)
 
-centers <- tibble::tibble(
+centers <- tibble(
   cluster = factor(1:3),
-  num_points = c(100, 150, 50), # number points in each cluster
-  x1 = c(5, 0, -3), # x1 coordinate of cluster center
-  x2 = c(-1, 1, -2) # x2 coordinate of cluster center
+  # number points in each cluster
+  num_points = c(100, 150, 50),
+  # x1 coordinate of cluster center
+  x1 = c(5, 0, -3),
+  # x2 coordinate of cluster center
+  x2 = c(-1, 1, -2)
 )
 
 points <- centers \%>\%
   mutate(
-    x1 = purrr::map2(num_points, x1, rnorm),
-    x2 = purrr::map2(num_points, x2, rnorm)
+    x1 = map2(num_points, x1, rnorm),
+    x2 = map2(num_points, x2, rnorm)
   ) \%>\%
-  dplyr::select(-num_points, -cluster) \%>\%
-  tidyr::unnest(c(x1, x2))
+  select(-num_points, -cluster) \%>\%
+  unnest(c(x1, x2))
 
-m <- mclust::Mclust(points)
+# fit model
+m <- Mclust(points)
 
+# summarize model fit with tidiers
 tidy(m)
 augment(m, points)
 glance(m)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[mclust:Mclust]{mclust::Mclust()}}

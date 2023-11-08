@@ -29,6 +29,7 @@ test_that("tidy.lm works", {
   td <- tidy(fit)
   td2 <- tidy(fit2)
   td3 <- tidy(fit3)
+  td_na_row <- tidy(fit_na_row)
 
   # conf.int = TRUE works for rank deficient fits
   # should get a "NaNs produced" warning
@@ -38,10 +39,12 @@ test_that("tidy.lm works", {
   check_tidy_output(td2)
   check_tidy_output(td3)
   check_tidy_output(td_rd)
+  check_tidy_output(td_na_row)
 
   check_dims(td, expected_rows = 2)
   check_dims(td2, expected_rows = 3)
   check_dims(td3, expected_rows = 1)
+  check_dims(td_na_row, expected_rows = 5)
 
   expect_equal(td$term, c("(Intercept)", "wt"))
   expect_equal(td2$term, c("(Intercept)", "wt", "log(disp)"))
@@ -75,7 +78,7 @@ test_that("augment.lm", {
     data = mtcars,
     newdata = mtcars
   )
-  
+
   check_augment_function(
     aug = augment.lm,
     model = fit3,
@@ -83,15 +86,17 @@ test_that("augment.lm", {
     newdata = mtcars
   )
 
-  expect_warning(
-    check_augment_function(
-      aug = augment.lm,
-      model = fit_na_row,
-      data = na_row_data,
-      newdata = na_row_data
-    ),
-    "prediction from a rank-deficient fit may be misleading"
-  )
+  if (paste(R.version$major, R.version$minor, sep = ".") <= "4.2.2") {
+    expect_warning(
+      check_augment_function(
+        aug = augment.lm,
+        model = fit_na_row,
+        data = na_row_data,
+        newdata = na_row_data
+      ),
+      "prediction from a rank-deficient fit may be misleading"
+    )
+  }
 
   check_augment_function(
     aug = augment.lm,

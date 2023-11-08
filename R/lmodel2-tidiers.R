@@ -23,28 +23,27 @@
 #'   be valid. More information can be found in
 #'   `vignette("mod2user", package = "lmodel2")`.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("lmodel2", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed(c("lmodel2", "ggplot2"))
 #'
+#' # load libraries for models and data
 #' library(lmodel2)
 #'
 #' data(mod2ex2)
 #' Ex2.res <- lmodel2(Prey ~ Predators, data = mod2ex2, "relative", "relative", 99)
 #' Ex2.res
 #'
+#' # summarize model fit with tidiers + visualization
 #' tidy(Ex2.res)
 #' glance(Ex2.res)
 #'
 #' # this allows coefficient plots with ggplot2
 #' library(ggplot2)
+#'
 #' ggplot(tidy(Ex2.res), aes(estimate, term, color = method)) +
 #'   geom_point() +
 #'   geom_errorbarh(aes(xmin = conf.low, xmax = conf.high)) +
 #'   geom_errorbarh(aes(xmin = conf.low, xmax = conf.high))
-#'   
-#' }
-#' 
+#'
 #' @export
 #' @seealso [tidy()], [lmodel2::lmodel2()]
 #' @aliases lmodel2_tidiers
@@ -73,7 +72,8 @@ tidy.lmodel2 <- function(x, ...) {
     ) %>%
     tidyr::separate(key, c("level", "term"), "-") %>%
     mutate(level = ifelse(level == "2.5%", "conf.low", "conf.high")) %>%
-    tidyr::pivot_wider(c(Method, term),
+    tidyr::pivot_wider(
+      id_cols = c(Method, term),
       names_from = level,
       values_from = value
     ) %>%

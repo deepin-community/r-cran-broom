@@ -69,14 +69,11 @@ cases, augment tries to reconstruct the original data based on the model
 object with varying degrees of success.
 
 The augmented dataset is always returned as a \link[tibble:tibble]{tibble::tibble} with the
-\strong{same number of rows} as the passed dataset. This means that the
-passed data must be coercible to a tibble. At this time, tibbles do not
-support matrix-columns. This means you should not specify a matrix
-of covariates in a model formula during the original model fitting
-process, and that \code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}} and
-\code{\link[survival:Surv]{survival::Surv()}} objects are not supported in input data. If you
-encounter errors, try explicitly passing a tibble, or fitting the original
-model on data in a tibble.
+\strong{same number of rows} as the passed dataset. This means that the passed
+data must be coercible to a tibble. If a predictor enters the model as part
+of a matrix of covariates, such as when the model formula uses
+\code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}}, or \code{\link[survival:Surv]{survival::Surv()}}, it is represented
+as a matrix column.
 
 We are in the process of defining behaviors for models fit with various
 \code{na.action} arguments, but make no guarantees about behavior when data is
@@ -91,36 +88,37 @@ augment.fixest only works for \code{\link[fixest:feols]{fixest::feols()}}, \code
 \code{\link[fixest:femlm]{fixest::fenegbin()}}, \code{\link[fixest:feNmlm]{fixest::feNmlm()}}, or \code{\link[fixest:feglm]{fixest::fepois()}}.
 }
 \examples{
+\dontshow{if (rlang::is_installed("fixest") & !broom:::is_cran_check()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("fixest", quietly = TRUE)) {
-
-\donttest{
+# load libraries for models and data
 library(fixest)
 
-gravity <- feols(log(Euros) ~ log(dist_km) | Origin + Destination + Product + Year, trade)
+gravity <-
+  feols(
+    log(Euros) ~ log(dist_km) | Origin + Destination + Product + Year, trade
+  )
 
 tidy(gravity)
 glance(gravity)
 augment(gravity, trade)
 
-## To get robust or clustered SEs, users can either:
-# 1) Or, specify the arguments directly in the tidy() call
+# to get robust or clustered SEs, users can either:
+
+# 1) specify the arguments directly in the `tidy()` call
 
 tidy(gravity, conf.int = TRUE, cluster = c("Product", "Year"))
 
 tidy(gravity, conf.int = TRUE, se = "threeway")
 
-# 2) Feed tidy() a summary.fixest object that has already accepted these arguments
+# 2) or, feed tidy() a summary.fixest object that has already accepted
+# these arguments
 
 gravity_summ <- summary(gravity, cluster = c("Product", "Year"))
+
 tidy(gravity_summ, conf.int = TRUE)
 
-# Approach (1) is preferred.
-
-}
-
-}
-
+# approach (1) is preferred.
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=augment]{augment()}}, \code{\link[fixest:feglm]{fixest::feglm()}}, \code{\link[fixest:femlm]{fixest::femlm()}}, \code{\link[fixest:feols]{fixest::feols()}}

@@ -8,11 +8,12 @@
 #'   estimate = "Estimate survival"
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("survival", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("survival")
 #'
+#' # load libraries for models and data
 #' library(survival)
+#'
+#' # fit model
 #' sexpfit <- survexp(
 #'   futime ~ 1,
 #'   rmap = list(
@@ -24,11 +25,10 @@
 #'   data = jasa
 #' )
 #'
+#' # summarize model fit with tidiers
 #' tidy(sexpfit)
 #' glance(sexpfit)
-#' 
-#' }
-#' 
+#'
 #' @aliases sexpfit_tidiers survexp_tidiers
 #' @export
 #' @seealso [tidy()], [survival::survexp()]

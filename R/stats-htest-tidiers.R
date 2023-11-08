@@ -21,21 +21,29 @@
 #' @examples
 #'
 #' tt <- t.test(rnorm(10))
+#'
 #' tidy(tt)
-#' glance(tt) # same output for all htests
+#'
+#' # the glance output will be the same for each of the below tests
+#' glance(tt)
 #'
 #' tt <- t.test(mpg ~ am, data = mtcars)
+#'
 #' tidy(tt)
 #'
 #' wt <- wilcox.test(mpg ~ am, data = mtcars, conf.int = TRUE, exact = FALSE)
+#'
 #' tidy(wt)
 #'
 #' ct <- cor.test(mtcars$wt, mtcars$mpg)
+#'
 #' tidy(ct)
 #'
 #' chit <- chisq.test(xtabs(Freq ~ Sex + Class, data = as.data.frame(Titanic)))
+#'
 #' tidy(chit)
 #' augment(chit)
+#'
 #' @aliases htest_tidiers
 #' @export
 #' @family htest tidiers
@@ -67,12 +75,12 @@ tidy.htest <- function(x, ...) {
       np <- stringr::str_replace(np, "num df", "num.df")
       np <- stringr::str_replace(np, "denom df", "den.df")
       names(x$parameter) <- np
-      
+
       message(
         "Multiple parameters; naming those columns ",
         paste(np, collapse = ", ")
       )
-      
+
       ret <- append(ret, x$parameter, after = 1)
     }
   }
@@ -87,7 +95,9 @@ tidy.htest <- function(x, ...) {
   if (!is.null(x$alternative)) {
     ret <- c(ret, alternative = as.character(x$alternative))
   }
-  as_tibble(ret)
+
+  # convert matrix columns to vector columns (see GH Issue #1081)
+  dplyr::mutate(as_tibble(ret), dplyr::across(where(is.matrix), c))
 }
 
 
@@ -117,6 +127,8 @@ glance.htest <- function(x, ...) tidy(x)
 #' @seealso [augment()], [stats::chisq.test()]
 #' @family htest tidiers
 augment.htest <- function(x, ...) {
+  check_ellipses("newdata", "augment", "htest", ...)
+
   if (all(c("observed", "expected", "residuals", "stdres") %in% names(x))) {
     return(augment_chisq_test(x, ...))
   }
@@ -170,7 +182,7 @@ augment_chisq_test <- function(x, ...) {
 #' Note also that the columns of group1 and group2 will always be a factor,
 #' even if the original input is (e.g.) numeric.
 #'
-#' @examples
+#' @examplesIf rlang::is_installed("modeldata")
 #'
 #' attach(airquality)
 #' Month <- factor(Month, labels = month.abb[5:9])
@@ -187,6 +199,7 @@ augment_chisq_test <- function(x, ...) {
 #' tidy(pairwise.t.test(compounds, class, alternative = "less"))
 #'
 #' tidy(pairwise.wilcox.test(compounds, class))
+#'
 #' @export
 #' @seealso [stats::pairwise.t.test()], [stats::pairwise.wilcox.test()],
 #'   [tidy()]
@@ -213,7 +226,7 @@ tidy.pairwise.htest <- function(x, ...) {
 #'
 #' @evalRd return_tidy("n", "delta", "sd", "sig.level", "power")
 #'
-#' @examples
+#' @examplesIf rlang::is_installed("ggplot2")
 #'
 #' ptt <- power.t.test(n = 2:30, delta = 1)
 #' tidy(ptt)

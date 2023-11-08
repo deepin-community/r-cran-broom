@@ -16,10 +16,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \value{
 A \link[tibble:tibble]{tibble::tibble} with columns depending on the component of
@@ -40,15 +43,15 @@ row in the tidied output corresponds to information about the principle
 components in the original space. The columns are:
 
 \item{\code{row}}{The variable labels (colnames) of the data set on
-which PCA was performed}
-\item{\code{PC}}{An integer vector indicating the principal component}
+which PCA was performed.}
+\item{\code{PC}}{An integer vector indicating the principal component.}
 \item{\code{value}}{The value of the eigenvector (axis score) on the
-indicated principal component}
+indicated principal component.}
 
 If \code{matrix} is \code{"d"}, \code{"eigenvalues"} or \code{"pcs"}, the columns are:
 
-\item{\code{PC}}{An integer vector indicating the principal component}
-\item{\code{std.dev}}{Standard deviation explained by this PC}
+\item{\code{PC}}{An integer vector indicating the principal component.}
+\item{\code{std.dev}}{Standard deviation explained by this PC.}
 \item{\code{percent}}{Fraction of variation explained by this component
 (a numeric value between 0 and 1).}
 \item{\code{cumulative}}{Cumulative fraction of variation explained by
@@ -58,23 +61,22 @@ principle components up to this component (a numeric value between 0 and
 \description{
 Broom tidies a number of lists that are effectively S3
 objects without a class attribute. For example, \code{\link[stats:optim]{stats::optim()}},
-\link[base:svd]{svd()} and \code{\link[akima:interp]{akima::interp()}} produce consistent output, but
+\link[base:svd]{svd()} and \code{\link[interp:interp]{interp::interp()}} produce consistent output, but
 because they do not have a class attribute, they cannot be handled by S3
 dispatch.
 
 These functions look at the elements of a list and determine if there is
 an appropriate tidying method to apply to the list. Those tidiers are
-themselves are implemented as functions of the form \verb{tidy_<function>}
-or \verb{glance_<function>} and are not exported (but they are documented!).
+implemented as functions of the form \verb{tidy_<function>} or
+\verb{glance_<function>} and are not exported (but they are documented!).
 
-If no appropriate tidying method is found, throws an error.
+If no appropriate tidying method is found, they throw an error.
 }
 \details{
 A very thin wrapper around \code{\link[=tidy_svd]{tidy_svd()}}.
 }
 \examples{
-
-if (requireNamespace("modeldata", quietly = TRUE)) {
+\dontshow{if (rlang::is_installed(c("modeldata", "ggplot2"))) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 library(modeldata)
 data(hpc_data)
@@ -103,9 +105,7 @@ tidy_u \%>\%
   ggplot(aes(class, value)) +
   geom_boxplot() +
   facet_wrap(~PC, scale = "free_y")
-  
-}
- 
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[irlba:irlba]{irlba::irlba()}}

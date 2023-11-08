@@ -14,10 +14,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Glance accepts a model object and returns a \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -40,23 +43,24 @@ that no longer have a well-defined value are filled in with an \code{NA}
 of the appropriate type.
 }
 \examples{
+\dontshow{if (rlang::is_installed("speedglm")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("speedglm", quietly = TRUE)) {
-
+# load libraries for models and data
 library(speedglm)
 
+# generate data
 clotting <- data.frame(
   u = c(5, 10, 15, 20, 30, 40, 60, 80, 100),
   lot1 = c(118, 58, 42, 35, 27, 25, 21, 19, 18)
 )
 
+# fit model
 fit <- speedglm(lot1 ~ log(u), data = clotting, family = Gamma(log))
 
+# summarize model fit with tidiers
 tidy(fit)
 glance(fit)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[speedglm:speedlm]{speedglm::speedlm()}}

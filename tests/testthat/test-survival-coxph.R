@@ -10,12 +10,19 @@ fit <- coxph(Surv(time, status) ~ age + sex, lung)
 fit2 <- coxph(Surv(time, status) ~ age + sex, lung, robust = TRUE)
 fit3 <- coxph(Surv(time, status) ~ age + sex + frailty(inst), lung)
 
-bladder1 <- bladder[bladder$enum < 5, ] 
-fit4 <- coxph(Surv(stop, event) ~ (rx + size + number) * strata(enum) + 
-                cluster(id), bladder1)
+bladder1 <- bladder[bladder$enum < 5, ]
+fit4 <- coxph(Surv(stop, event) ~ (rx + size + number) * strata(enum) +
+  cluster(id), bladder1)
 
 # this model does not have summary(x)$used.robust
 fit5 <- coxph(Surv(time, status) ~ age + pspline(nodes), data = colon)
+
+colon$super_long_variable_name_that_would_be_truncated <- colon$nodes
+
+# see #1153
+fit6 <- coxph(Surv(time, status) ~ age + 
+                pspline(super_long_variable_name_that_would_be_truncated), 
+              data = colon)
 
 test_that("coxph tidier arguments", {
   check_arguments(tidy.coxph)
@@ -35,6 +42,7 @@ test_that("tidy.coxph", {
   td9 <- tidy(fit4, conf.int = TRUE)
   td10 <- tidy(fit5)
   td11 <- tidy(fit5, conf.int = TRUE)
+  td12 <- tidy(fit6, maxlabel = 1000)
 
   check_tidy_output(td)
   check_tidy_output(td2)
@@ -47,6 +55,12 @@ test_that("tidy.coxph", {
   check_tidy_output(td9)
   check_tidy_output(td10)
   check_tidy_output(td11)
+  check_tidy_output(td12)
+  
+  expect_equal(
+    td12$term[2],
+    "pspline(super_long_variable_name_that_would_be_truncated), linear"
+  )
 })
 
 test_that("glance.coxph", {
@@ -59,11 +73,6 @@ test_that("glance.coxph", {
 })
 
 test_that("augment.coxph", {
-  expect_error(
-    augment(fit),
-    regexp = "Must specify either `data` or `newdata` argument."
-  )
-
   check_augment_function(
     aug = augment.coxph,
     model = fit,

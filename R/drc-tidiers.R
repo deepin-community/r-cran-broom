@@ -13,30 +13,31 @@
 #' @details The tibble has one row for each curve and term in the regression.
 #'   The `curveid` column indicates the curve.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("drc", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("drc")
 #'
+#' # load libraries for models and data
 #' library(drc)
 #'
+#' # fit model
 #' mod <- drm(dead / total ~ conc, type,
 #'   weights = total, data = selenium, fct = LL.2(), type = "binomial"
 #' )
 #'
+#' # summarize model fit with tidiers
 #' tidy(mod)
 #' tidy(mod, conf.int = TRUE)
 #'
 #' glance(mod)
 #'
 #' augment(mod, selenium)
-#' 
-#' } 
-#' 
+#'
 #' @export
 #' @seealso [tidy()], [drc::drm()]
 #' @family drc tidiers
 #' @aliases drc_tidiers
 tidy.drc <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
+  check_ellipses("exponentiate", "tidy", "drc", ...)
+
   ret <- coef(summary(x))
   ret <- as_tibble(ret, rownames = "term")
   names(ret) <- c("term", "estimate", "std.error", "statistic", "p.value")

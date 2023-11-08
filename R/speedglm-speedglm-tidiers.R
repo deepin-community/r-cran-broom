@@ -8,24 +8,24 @@
 #'
 #' @evalRd return_tidy(regression = TRUE)
 #'
-#' @examples
-#' 
-#' if (requireNamespace("speedglm", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("speedglm")
 #'
+#' # load libraries for models and data
 #' library(speedglm)
 #'
+#' # generate data
 #' clotting <- data.frame(
 #'   u = c(5, 10, 15, 20, 30, 40, 60, 80, 100),
 #'   lot1 = c(118, 58, 42, 35, 27, 25, 21, 19, 18)
 #' )
 #'
+#' # fit model
 #' fit <- speedglm(lot1 ~ log(u), data = clotting, family = Gamma(log))
 #'
+#' # summarize model fit with tidiers
 #' tidy(fit)
 #' glance(fit)
-#' 
-#' }
-#' 
+#'
 #' @aliases speedglm_tidiers
 #' @export
 #' @family speedlm tidiers
@@ -40,7 +40,7 @@ tidy.speedglm <- function(x, conf.int = FALSE, conf.level = 0.95,
   } else {
     ret$p.value <- as.numeric(ret$p.value)
   }
-  
+
   if (conf.int) {
     ci <- broom_confint_terms(x, level = conf.level)
     ret <- dplyr::left_join(ret, ci, by = "term")

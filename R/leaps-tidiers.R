@@ -13,15 +13,17 @@
 #'   mallows_cp = "Mallow's Cp statistic."
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("leaps", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("leaps")
 #'
-#' all_fits <- leaps::regsubsets(hp ~ ., mtcars)
+#' # load libraries for models and data
+#' library(leaps)
+#'
+#' # fit model
+#' all_fits <- regsubsets(hp ~ ., mtcars)
+#'
+#' # summarize model fit with tidiers
 #' tidy(all_fits)
-#' 
-#' }
-#' 
+#'
 #' @aliases leaps_tidiers
 #' @export
 #' @seealso [tidy()], [leaps::regsubsets()]

@@ -23,10 +23,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -37,34 +40,38 @@ If a model has several distinct types of components, you will need to
 specify which components to return.
 }
 \examples{
+\dontshow{if (rlang::is_installed("lmtest")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("lmtest", quietly = TRUE)) {
-
+# load libraries for models and data
 library(lmtest)
 
 m <- lm(dist ~ speed, data = cars)
 
-coeftest(m) 
+coeftest(m)
 tidy(coeftest(m))
 tidy(coeftest(m, conf.int = TRUE))
 
-# A very common workflow is to combine lmtest::coeftest with alternate
+# a very common workflow is to combine lmtest::coeftest with alternate
 # variance-covariance matrices via the sandwich package. The lmtest
 # tidiers support this workflow too, enabling you to adjust the standard
 # errors of your tidied models on the fly.
 library(sandwich)
-tidy(coeftest(m, vcov = vcovHC))               # "HC3" (default) robust SEs
-tidy(coeftest(m, vcov = vcovHC, type = "HC2")) # "HC2" robust SEs
-tidy(coeftest(m, vcov = NeweyWest))            # N-W HAC robust SEs
 
-# The columns of the returned tibble for glance.coeftest() will vary 
+# "HC3" (default) robust SEs
+tidy(coeftest(m, vcov = vcovHC))
+
+# "HC2" robust SEs
+tidy(coeftest(m, vcov = vcovHC, type = "HC2"))
+
+# N-W HAC robust SEs
+tidy(coeftest(m, vcov = NeweyWest))
+
+# the columns of the returned tibble for glance.coeftest() will vary
 # depending on whether the coeftest object retains the underlying model.
 # Users can control this with the "save = TRUE" argument of coeftest().
 glance(coeftest(m))
-glance(coeftest(m, save = TRUE)) # More columns
-
-}
-
+glance(coeftest(m, save = TRUE))
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[lmtest:coeftest]{lmtest::coeftest()}}

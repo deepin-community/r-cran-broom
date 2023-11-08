@@ -19,34 +19,31 @@
 #'   \item{std.error}{The standard error}
 #'   \item{mcmc.error}{The MCMC error}
 #'   \item{p.value}{The two-sided p-value}
-#' 
-#' @examples
-#' 
-#' if (requireNamespace("ergm", quietly = TRUE)) {
 #'
+#' @examplesIf rlang::is_installed("ergm")
+#'
+#' # load libraries for models and data
 #' library(ergm)
-#' # Using the same example as the ergm package
-#' # Load the Florentine marriage network data
+#'
+#' # load the Florentine marriage network data
 #' data(florentine)
 #'
-#' # Fit a model where the propensity to form ties between
+#' # fit a model where the propensity to form ties between
 #' # families depends on the absolute difference in wealth
 #' gest <- ergm(flomarriage ~ edges + absdiff("wealth"))
 #'
-#' # Show terms, coefficient estimates and errors
+#' # show terms, coefficient estimates and errors
 #' tidy(gest)
 #'
-#' # Show coefficients as odds ratios with a 99% CI
+#' # show coefficients as odds ratios with a 99% CI
 #' tidy(gest, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.99)
 #'
-#' # Take a look at likelihood measures and other
+#' # take a look at likelihood measures and other
 #' # control parameters used during MCMC estimation
 #' glance(gest)
 #' glance(gest, deviance = TRUE)
 #' glance(gest, mcmc = TRUE)
-#' 
-#' }
-#' 
+#'
 #' @references Hunter DR, Handcock MS, Butts CT, Goodreau SM, Morris M (2008b).
 #'   \pkg{ergm}: A Package to Fit, Simulate and Diagnose Exponential-Family
 #'   Models for Networks. *Journal of Statistical Software*, 24(3).
@@ -59,7 +56,6 @@
 #' @family ergm tidiers
 tidy.ergm <- function(x, conf.int = FALSE, conf.level = 0.95,
                       exponentiate = FALSE, ...) {
-
   # in ergm 3.9 summary(x, ...)$coefs has columns:
   #   Estimate, Std. Error, MCMC %, Pr(>|Z|)
 
@@ -90,7 +86,6 @@ tidy.ergm <- function(x, conf.int = FALSE, conf.level = 0.95,
     }
 
     ret <- exponentiate(ret)
-
   }
 
   as_tibble(ret)
@@ -134,7 +129,6 @@ glance.ergm <- function(x, deviance = FALSE, mcmc = FALSE, ...) {
   )
 
   if (deviance & !is.null(ret$logLik)) {
-
     # see #567 for details on the following
 
     if (utils::packageVersion("ergm") < "3.10") {
@@ -163,7 +157,7 @@ glance.ergm <- function(x, deviance = FALSE, mcmc = FALSE, ...) {
         "using MCMC, so the corresponding columns will be omitted."
       )
     }
-    
+
     ret$MCMC.interval <- x$control$MCMC.interval
     ret$MCMC.burnin <- x$control$MCMC.burnin
     ret$MCMC.samplesize <- x$control$MCMC.samplesize

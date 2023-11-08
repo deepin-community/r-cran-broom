@@ -25,42 +25,44 @@
 #'   fixed effects, see \url{https://github.com/lrberge/fixest/issues/6} and
 #'   \url{https://github.com/sgaure/lfe/issues/1#issuecomment-530646990})
 #'
-#' @examples
-#' 
-#' if (requireNamespace("fixest", quietly = TRUE)) {
-#' 
-#' \donttest{
+#' @examplesIf rlang::is_installed("fixest") & !broom:::is_cran_check()
+#'
+#' # load libraries for models and data
 #' library(fixest)
-#' 
-#' gravity <- feols(log(Euros) ~ log(dist_km) | Origin + Destination + Product + Year, trade)
+#'
+#' gravity <-
+#'   feols(
+#'     log(Euros) ~ log(dist_km) | Origin + Destination + Product + Year, trade
+#'   )
 #'
 #' tidy(gravity)
 #' glance(gravity)
 #' augment(gravity, trade)
 #'
-#' ## To get robust or clustered SEs, users can either:
-#' # 1) Or, specify the arguments directly in the tidy() call
-#' 
+#' # to get robust or clustered SEs, users can either:
+#'
+#' # 1) specify the arguments directly in the `tidy()` call
+#'
 #' tidy(gravity, conf.int = TRUE, cluster = c("Product", "Year"))
-#' 
+#'
 #' tidy(gravity, conf.int = TRUE, se = "threeway")
-#' 
-#' # 2) Feed tidy() a summary.fixest object that has already accepted these arguments
-#' 
+#'
+#' # 2) or, feed tidy() a summary.fixest object that has already accepted
+#' # these arguments
+#'
 #' gravity_summ <- summary(gravity, cluster = c("Product", "Year"))
+#'
 #' tidy(gravity_summ, conf.int = TRUE)
-#' 
-#' # Approach (1) is preferred.
-#' 
-#' }
-#' 
-#' }
+#'
+#' # approach (1) is preferred.
 #'
 #' @export
 #' @family fixest tidiers
 #' @seealso [tidy()], [fixest::feglm()], [fixest::fenegbin()],
 #' [fixest::feNmlm()], [fixest::femlm()], [fixest::feols()], [fixest::fepois()]
 tidy.fixest <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
+  check_ellipses("exponentiate", "tidy", "fixest", ...)
+
   coeftable <- summary(x, ...)$coeftable
   ret <- as_tibble(coeftable, rownames = "term")
   colnames(ret) <- c("term", "estimate", "std.error", "statistic", "p.value")
@@ -96,12 +98,14 @@ tidy.fixest <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
 #' @export
 #' @family fixest tidiers
 #' @seealso [augment()], [fixest::feglm()], [fixest::femlm()], [fixest::feols()]
-augment.fixest <- function(x, data = NULL, newdata = NULL,
+augment.fixest <- function(
+    x, data = NULL, newdata = NULL,
     type.predict = c("link", "response"),
     type.residuals = c("response", "deviance", "pearson", "working"),
     ...) {
   if (!x$method %in% c("feols", "feglm", "femlm")) {
-    stop("augment is only supported for fixest models estimated with ",
+    stop(
+      "augment is only supported for fixest models estimated with ",
       "feols, feglm, or femlm\n",
       "  (supplied model used ", x$method, ")"
     )
@@ -162,13 +166,16 @@ glance.fixest <- function(x, ...) {
   )
 
   if (identical(x$method, "feols")) {
-    r2_vals <- fixest::r2(x, type = c("r2", "ar2", "wr2"))
+    r2_types <- c("r2", "ar2", "wr2")
+    r2_vals <- purrr::map_dbl(r2_types, fixest::r2, x = x) %>%
+      purrr::set_names(r2_types)
     r2_names <- c("r.squared", "adj.r.squared", "within.r.squared")
     # Pull the summary objects that are specific to OLS
     res_specific <- with(
       summary(x, ...),
       tibble(
-        sigma = sqrt(sigma2),
+        # catch error in models with only fixed effects and no regressors
+        sigma = tryCatch(sqrt(sigma2), error = function(e) NA_real_),
         pseudo.r.squared = NA_real_, # always NA for OLS
       )
     )
@@ -194,9 +201,11 @@ glance.fixest <- function(x, ...) {
   # always return all four R2 values.
   names(r2_vals) <- r2_names
   res_r2 <- tibble(!!!r2_vals)
-  col_order <- c("r.squared", "adj.r.squared", "within.r.squared",
-    "pseudo.r.squared", "sigma", "nobs", "AIC", "BIC", "logLik")
+  col_order <- c(
+    "r.squared", "adj.r.squared", "within.r.squared",
+    "pseudo.r.squared", "sigma", "nobs", "AIC", "BIC", "logLik"
+  )
   res <- bind_cols(res_common, res_r2, res_specific) %>%
-    select(col_order)
+    select(dplyr::any_of(col_order))
   res
 }

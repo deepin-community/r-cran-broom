@@ -9,21 +9,19 @@
 #'   estimate = "Estimated hazard rate."
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("muhaz", quietly = TRUE)) {
-#'   if (requireNamespace("survival", quietly = TRUE)) {
-#' 
+#' @examplesIf (rlang::is_installed("muhaz") & rlang::is_installed("survival"))
+#'
+#' # load libraries for models and data
 #' library(muhaz)
 #' library(survival)
 #'
+#' # fit model
 #' x <- muhaz(ovarian$futime, ovarian$fustat)
+#'
+#' # summarize model fit with tidiers
 #' tidy(x)
 #' glance(x)
-#' 
-#'   }
-#' }
-#' 
+#'
 #' @aliases muhaz_tidiers
 #' @export
 #' @seealso [tidy()], [muhaz::muhaz()]

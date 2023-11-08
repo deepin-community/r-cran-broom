@@ -14,10 +14,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Glance accepts a model object and returns a \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -47,6 +50,7 @@ however, that this method does not return all of the columns of the
 non-summary method (e.g. AIC and BIC will be missing.)
 }
 \examples{
+\dontshow{if (rlang::is_installed("ggplot2")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 library(ggplot2)
 library(dplyr)
@@ -63,9 +67,9 @@ ggplot(d, aes(estimate, term, xmin = conf.low, xmax = conf.high, height = 0)) +
   geom_point() +
   geom_vline(xintercept = 0, lty = 4) +
   geom_errorbarh()
-  
-# Aside: There are tidy() and glance() methods for lm.summary objects too. 
-# This can be useful when you want to conserve memory by converting large lm 
+
+# aside: There are tidy() and glance() methods for lm.summary objects too.
+# this can be useful when you want to conserve memory by converting large lm
 # objects into their leaner summary.lm equivalents.
 s <- summary(mod)
 tidy(s, conf.int = TRUE)
@@ -81,18 +85,21 @@ newdata <- mtcars \%>\%
 augment(mod, newdata = newdata)
 
 # ggplot2 example where we also construct 95\% prediction interval
-mod2 <- lm(mpg ~ wt, data = mtcars) ## simpler bivariate model since we're plotting in 2D
+
+# simpler bivariate model since we're plotting in 2D
+mod2 <- lm(mpg ~ wt, data = mtcars)
 
 au <- augment(mod2, newdata = newdata, interval = "prediction")
 
-ggplot(au, aes(wt, mpg)) + 
+ggplot(au, aes(wt, mpg)) +
   geom_point() +
-  geom_line(aes(y = .fitted)) + 
+  geom_line(aes(y = .fitted)) +
   geom_ribbon(aes(ymin = .lower, ymax = .upper), col = NA, alpha = 0.3)
 
 # predict on new data without outcome variable. Output does not include .resid
 newdata <- newdata \%>\%
   select(-mpg)
+
 augment(mod, newdata = newdata)
 
 au <- augment(mod, data = mtcars)
@@ -104,6 +111,7 @@ ggplot(au, aes(.hat, .std.resid)) +
   geom_smooth(se = FALSE)
 
 plot(mod, which = 6)
+
 ggplot(au, aes(.hat, .cooksd)) +
   geom_vline(xintercept = 0, colour = NA) +
   geom_abline(slope = seq(0, 3, by = 0.5), colour = "white") +
@@ -114,7 +122,9 @@ ggplot(au, aes(.hat, .cooksd)) +
 a <- matrix(rnorm(20), nrow = 10)
 b <- a + rnorm(length(a))
 result <- lm(b ~ a)
+
 tidy(result)
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=glance]{glance()}}, \code{\link[=glance.summary.lm]{glance.summary.lm()}}
@@ -141,9 +151,9 @@ A \code{\link[tibble:tibble]{tibble::tibble()}} with exactly one row and columns
   \item{r.squared}{R squared statistic, or the percent of variation explained by the model. Also known as the coefficient of determination.}
   \item{sigma}{Estimated standard error of the residuals.}
   \item{statistic}{Test statistic.}
-  \item{df}{The degrees for freedom from the numerator of the overall 
-    F-statistic. This is new in broom 0.7.0. Previously, this reported 
-    the rank of the design matrix, which is one more than the numerator 
+  \item{df}{The degrees for freedom from the numerator of the overall
+    F-statistic. This is new in broom 0.7.0. Previously, this reported
+    the rank of the design matrix, which is one more than the numerator
     degrees of freedom of the overall F-statistic.}
 
 }

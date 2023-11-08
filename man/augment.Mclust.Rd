@@ -22,10 +22,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Augment accepts a model object and a dataset and adds
@@ -55,50 +58,56 @@ cases, augment tries to reconstruct the original data based on the model
 object with varying degrees of success.
 
 The augmented dataset is always returned as a \link[tibble:tibble]{tibble::tibble} with the
-\strong{same number of rows} as the passed dataset. This means that the
-passed data must be coercible to a tibble. At this time, tibbles do not
-support matrix-columns. This means you should not specify a matrix
-of covariates in a model formula during the original model fitting
-process, and that \code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}} and
-\code{\link[survival:Surv]{survival::Surv()}} objects are not supported in input data. If you
-encounter errors, try explicitly passing a tibble, or fitting the original
-model on data in a tibble.
+\strong{same number of rows} as the passed dataset. This means that the passed
+data must be coercible to a tibble. If a predictor enters the model as part
+of a matrix of covariates, such as when the model formula uses
+\code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}}, or \code{\link[survival:Surv]{survival::Surv()}}, it is represented
+as a matrix column.
 
 We are in the process of defining behaviors for models fit with various
 \code{na.action} arguments, but make no guarantees about behavior when data is
 missing at this time.
 }
 \examples{
+\dontshow{if (rlang::is_installed("mclust")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("mclust", quietly = TRUE)) {
-
-library(dplyr)
+# load library for models and data
 library(mclust)
+
+# load data manipulation libraries
+library(dplyr)
+library(tibble)
+library(purrr)
+library(tidyr)
+
 set.seed(27)
 
-centers <- tibble::tibble(
+centers <- tibble(
   cluster = factor(1:3),
-  num_points = c(100, 150, 50), # number points in each cluster
-  x1 = c(5, 0, -3), # x1 coordinate of cluster center
-  x2 = c(-1, 1, -2) # x2 coordinate of cluster center
+  # number points in each cluster
+  num_points = c(100, 150, 50),
+  # x1 coordinate of cluster center
+  x1 = c(5, 0, -3),
+  # x2 coordinate of cluster center
+  x2 = c(-1, 1, -2)
 )
 
 points <- centers \%>\%
   mutate(
-    x1 = purrr::map2(num_points, x1, rnorm),
-    x2 = purrr::map2(num_points, x2, rnorm)
+    x1 = map2(num_points, x1, rnorm),
+    x2 = map2(num_points, x2, rnorm)
   ) \%>\%
-  dplyr::select(-num_points, -cluster) \%>\%
-  tidyr::unnest(c(x1, x2))
+  select(-num_points, -cluster) \%>\%
+  unnest(c(x1, x2))
 
-m <- mclust::Mclust(points)
+# fit model
+m <- Mclust(points)
 
+# summarize model fit with tidiers
 tidy(m)
 augment(m, points)
 glance(m)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=augment]{augment()}}, \code{\link[mclust:Mclust]{mclust::Mclust()}}
