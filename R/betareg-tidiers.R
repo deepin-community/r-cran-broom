@@ -16,16 +16,20 @@
 #'   precision is the inverse of the variance, often referred to as `phi`.
 #'   At least one term will have been used to model the precision `phi`.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("betareg", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("betareg")
 #'
+#' # load libraries for models and data
 #' library(betareg)
+#'
+#' # load dats
 #' data("GasolineYield", package = "betareg")
 #'
+#' # fit model
 #' mod <- betareg(yield ~ batch + temp, data = GasolineYield)
 #'
 #' mod
+#'
+#' # summarize model fit with tidiers
 #' tidy(mod)
 #' tidy(mod, conf.int = TRUE)
 #' tidy(mod, conf.int = TRUE, conf.level = .99)
@@ -33,15 +37,14 @@
 #' augment(mod)
 #'
 #' glance(mod)
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @seealso [tidy()], [betareg::betareg()]
 #' @family betareg tidiers
 #' @aliases betareg_tidiers
 tidy.betareg <- function(x, conf.int = FALSE, conf.level = .95, ...) {
-  
+  check_ellipses("exponentiate", "tidy", "betareg", ...)
+
   ret <- map_as_tidy_tibble(
     purrr::map(coef(summary(x)), as.matrix),
     new_names = c("estimate", "std.error", "statistic", "p.value")

@@ -8,17 +8,17 @@ Build-Depends: debhelper-compat (= 13),
                dh-r,
                r-base-dev,
                r-cran-backports,
-               r-cran-dplyr (>= 1.0.0),
+               r-cran-dplyr,
                r-cran-ellipsis,
                r-cran-generics,
                r-cran-glue,
+               r-cran-lifecycle,
                r-cran-purrr,
                r-cran-rlang,
                r-cran-stringr,
-               r-cran-tibble (>= 3.0.0),
-               r-cran-tidyr (>= 1.0.0),
-               r-cran-ggplot2
-Standards-Version: 4.6.0
+               r-cran-tibble,
+               r-cran-tidyr
+Standards-Version: 4.6.2
 Vcs-Browser: https://salsa.debian.org/r-pkg-team/r-cran-broom
 Vcs-Git: https://salsa.debian.org/r-pkg-team/r-cran-broom.git
 Homepage: https://cran.r-project.org/package=broom

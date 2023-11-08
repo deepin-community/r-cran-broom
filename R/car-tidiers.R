@@ -10,16 +10,20 @@
 #'   method = "Always `Durbin-Watson Test`."
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("car", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("car")
 #'
-#' dw <- car::durbinWatsonTest(lm(mpg ~ wt, data = mtcars))
+#' # load modeling library
+#' library(car)
+#'
+#' # fit model
+#' dw <- durbinWatsonTest(lm(mpg ~ wt, data = mtcars))
+#'
+#' # summarize model fit with tidiers
 #' tidy(dw)
-#' glance(dw) # same output for all durbinWatsonTests
-#' 
-#' }
-#' 
+#'
+#' # same output for all durbinWatsonTests
+#' glance(dw)
+#'
 #' @name durbinWatsonTest_tidiers
 #' @family car tidiers
 #' @export
@@ -53,17 +57,18 @@ glance.durbinWatsonTest <- function(x, ...) tidy(x)
 #'   "df.residual" = "Residual degrees of freedom."
 #' )
 #'
-#' @examples
+#' @examplesIf rlang::is_installed("car")
 #'
-#' if (requireNamespace("car", quietly = TRUE)) {
-#' 
+#' # load libraries for models and data
 #' library(car)
+#'
 #' data(Moore)
+#'
 #' lt <- with(Moore, leveneTest(conformity, fcategory))
+#'
 #' tidy(lt)
-#' glance(lt) # same output for all leveneTest
-#' 
-#' }
+#' glance(lt)
+#'
 #' @name leveneTest_tidiers
 #' @family car tidiers
 #' @export

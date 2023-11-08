@@ -39,10 +39,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -53,16 +56,23 @@ If a model has several distinct types of components, you will need to
 specify which components to return.
 }
 \examples{
+\dontshow{if (rlang::is_installed("joineRML")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("joineRML", quietly = TRUE)) {
-
+# broom only skips running these examples because the example models take a
+# while to generate—they should run just fine, though!
 \dontrun{
-# Fit a joint model with bivariate longitudinal outcomes
+
+
+# load libraries for models and data
 library(joineRML)
+
+# fit a joint model with bivariate longitudinal outcomes
 data(heart.valve)
+
 hvd <- heart.valve[!is.na(heart.valve$log.grad) &
   !is.na(heart.valve$log.lvmi) &
   heart.valve$num <= 50, ]
+
 fit <- mjoint(
   formLongFixed = list(
     "grad" = log.grad ~ time + sex + hs,
@@ -78,28 +88,27 @@ fit <- mjoint(
   timeVar = "time"
 )
 
-# Extract the survival fixed effects
+# extract the survival fixed effects
 tidy(fit)
 
-# Extract the longitudinal fixed effects
+# extract the longitudinal fixed effects
 tidy(fit, component = "longitudinal")
 
-# Extract the survival fixed effects with confidence intervals
+# extract the survival fixed effects with confidence intervals
 tidy(fit, ci = TRUE)
 
-# Extract the survival fixed effects with confidence intervals based
+# extract the survival fixed effects with confidence intervals based
 # on bootstrapped standard errors
 bSE <- bootSE(fit, nboot = 5, safe.boot = TRUE)
 tidy(fit, boot_se = bSE, ci = TRUE)
 
-# Augment original data with fitted longitudinal values and residuals
+# augment original data with fitted longitudinal values and residuals
 hvd2 <- augment(fit)
 
-# Extract model statistics
+# extract model statistics
 glance(fit)
 }
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[joineRML:mjoint]{joineRML::mjoint()}}, \code{\link[joineRML:bootSE]{joineRML::bootSE()}}

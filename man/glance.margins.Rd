@@ -14,10 +14,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Glance accepts a model object and returns a \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -40,54 +43,58 @@ that no longer have a well-defined value are filled in with an \code{NA}
 of the appropriate type.
 }
 \examples{
+\dontshow{if (rlang::is_installed("margins")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("margins", quietly = TRUE)) {
-
+# load libraries for models and data
 library(margins)
 
-## Example 1: Logit model ##
-
+# example 1: logit model
 mod_log <- glm(am ~ cyl + hp + wt, data = mtcars, family = binomial)
 
-# Get tidied "naive" model coefficients
+# get tidied "naive" model coefficients
 tidy(mod_log)
 
-# Convert to marginal effects with margins::margins()
+# convert to marginal effects with margins()
 marg_log <- margins(mod_log)
 
-# Get tidied marginal effects
+# get tidied marginal effects
 tidy(marg_log)
 tidy(marg_log, conf.int = TRUE)
-glance(marg_log) ## Requires running the underlying model again. Quick for this example.
-\dontrun{augment(marg_log) ## Not supported.}
-augment(mod_log) ## But can get the same info by running on the underlying model.
 
-## Example 2: Threeway interaction terms ##
+# requires running the underlying model again. quick for this example
+glance(marg_log)
 
+# augmenting `margins` outputs isn't supported, but
+# you can get the same info by running on the underlying model
+augment(mod_log)
+
+# example 2: threeway interaction terms
 mod_ie <- lm(mpg ~ wt * cyl * disp, data = mtcars)
 
-# Get tidied "naive" model coefficients
+# get tidied "naive" model coefficients
 tidy(mod_ie)
 
-# Convert to marginal effects with margins::margins()
+# convert to marginal effects with margins()
 marg_ie0 <- margins(mod_ie)
-# Get tidied marginal effects 
+# get tidied marginal effects
 tidy(marg_ie0)
 glance(marg_ie0)
 
-# Marginal effects evaluated at specific values of a variable (here: cyl)
+# marginal effects evaluated at specific values of a variable (here: cyl)
 marg_ie1 <- margins(mod_ie, at = list(cyl = c(4,6,8)))
+
+# summarize model fit with tidiers
 tidy(marg_ie1)
 
-# Marginal effects of one interaction variable (here: wt), modulated at 
+# marginal effects of one interaction variable (here: wt), modulated at
 # specific values of the two other interaction variables (here: cyl and drat)
 marg_ie2 <- margins(mod_ie,
-                    variables = "wt", ## Main var
-                    at = list(cyl = c(4,6,8), drat = c(3, 3.5, 4))) ## Modulating vars
+                    variables = "wt",
+                    at = list(cyl = c(4,6,8), drat = c(3, 3.5, 4)))
+
+# summarize model fit with tidiers
 tidy(marg_ie2)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}} with exactly one row and columns:

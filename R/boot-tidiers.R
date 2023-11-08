@@ -7,6 +7,7 @@
 #'   Defaults to `"perc"`. The allowed types are `"perc"`, `"basic"`,
 #'   `"bca"`, and `"norm"`. Does not support `"stud"` or `"all"`.
 #' @template param_unused_dots
+#' @template param_exponentiate
 #'
 #' @evalRd return_tidy("bias", "std.error", "term",
 #'   statistic = "Original value of the statistic."
@@ -21,10 +22,9 @@
 #' and `statistic` columns are omitted, and only `estimate` and
 #' `std.error` columns shown.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("boot", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("boot")
 #'
+#' # load modeling library
 #' library(boot)
 #'
 #' clotting <- data.frame(
@@ -33,6 +33,7 @@
 #'   lot2 = c(69, 35, 26, 21, 18, 16, 13, 12, 12)
 #' )
 #'
+#' # fit models
 #' g1 <- glm(lot2 ~ log(u), data = clotting, family = Gamma)
 #'
 #' bootfun <- function(d, i) {
@@ -40,21 +41,20 @@
 #' }
 #'
 #' bootres <- boot(clotting, bootfun, R = 999)
+#'
+#' # summarize model fits with tidiers
 #' tidy(g1, conf.int = TRUE)
 #' tidy(bootres, conf.int = TRUE)
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @aliases boot_tidiers
 #' @seealso [tidy()], [boot::boot()], [boot::tsboot()], [boot::boot.ci()],
 #'   [rsample::bootstraps()]
 tidy.boot <- function(x,
-                      ## is there a convention for the default value of
-                      ## conf.int?
                       conf.int = FALSE,
                       conf.level = 0.95,
                       conf.method = c("perc", "bca", "basic", "norm"),
+                      exponentiate = FALSE,
                       ...) {
   conf.method <- rlang::arg_match(conf.method)
 
@@ -86,8 +86,7 @@ tidy.boot <- function(x,
       op <- cbind(t0, apply(t, 2L, mean, na.rm = TRUE) -
         t0, sqrt(apply(t, 2L, function(t.st) var(t.st[!is.na(t.st)]))))
       colnames(op) <- c("statistic", "bias", "std.error")
-    }
-    else {
+    } else {
       op <- NULL
       for (i in index) {
         op <- rbind(op, boot::imp.moments(boot.out,
@@ -112,8 +111,8 @@ tidy.boot <- function(x,
       conf = conf.level, type = conf.method
     )
 
-    ## boot.ci uses c("norm", "basic", "perc", "stud") for types
-    ## stores them with longer names
+    # boot.ci uses c("norm", "basic", "perc", "stud") for types
+    # stores them with longer names
     ci.pos <- pmatch(conf.method, names(ci.list[[1]]))
 
     if (conf.method == "norm") {
@@ -125,5 +124,10 @@ tidy.boot <- function(x,
     colnames(ci.tab) <- c("conf.low", "conf.high")
     ret <- cbind(ret, ci.tab)
   }
+
+  if (exponentiate) {
+    ret <- exponentiate(ret, col = "statistic")
+  }
+
   as_tibble(ret)
 }

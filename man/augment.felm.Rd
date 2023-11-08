@@ -22,10 +22,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Augment accepts a model object and a dataset and adds
@@ -55,55 +58,56 @@ cases, augment tries to reconstruct the original data based on the model
 object with varying degrees of success.
 
 The augmented dataset is always returned as a \link[tibble:tibble]{tibble::tibble} with the
-\strong{same number of rows} as the passed dataset. This means that the
-passed data must be coercible to a tibble. At this time, tibbles do not
-support matrix-columns. This means you should not specify a matrix
-of covariates in a model formula during the original model fitting
-process, and that \code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}} and
-\code{\link[survival:Surv]{survival::Surv()}} objects are not supported in input data. If you
-encounter errors, try explicitly passing a tibble, or fitting the original
-model on data in a tibble.
+\strong{same number of rows} as the passed dataset. This means that the passed
+data must be coercible to a tibble. If a predictor enters the model as part
+of a matrix of covariates, such as when the model formula uses
+\code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}}, or \code{\link[survival:Surv]{survival::Surv()}}, it is represented
+as a matrix column.
 
 We are in the process of defining behaviors for models fit with various
 \code{na.action} arguments, but make no guarantees about behavior when data is
 missing at this time.
 }
 \examples{
+\dontshow{if (rlang::is_installed("lfe")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("lfe", quietly = TRUE)) {
-
+# load libraries for models and data
 library(lfe)
 
-# Use built-in "airquality" dataset
+# use built-in `airquality` dataset
 head(airquality)
 
-# No FEs; same as lm()
+# no FEs; same as lm()
 est0 <- felm(Ozone ~ Temp + Wind + Solar.R, airquality)
+
+# summarize model fit with tidiers
 tidy(est0)
 augment(est0)
 
-# Add month fixed effects
-est1 <- felm(Ozone ~ Temp + Wind + Solar.R  | Month, airquality)
+# add month fixed effects
+est1 <- felm(Ozone ~ Temp + Wind + Solar.R | Month, airquality)
+
+# summarize model fit with tidiers
 tidy(est1)
 tidy(est1, fe = TRUE)
 augment(est1)
 glance(est1)
 
-# The "se.type" argument can be used to switch out different standard errors 
-# types on the fly. In turn, this can be useful exploring the effect of 
+# the "se.type" argument can be used to switch out different standard errors
+# types on the fly. In turn, this can be useful exploring the effect of
 # different error structures on model inference.
 tidy(est1, se.type = "iid")
 tidy(est1, se.type = "robust")
 
-# Add clustered SEs (also by month)
-est2 <- felm(Ozone ~ Temp + Wind + Solar.R  | Month | 0 | Month, airquality)
-tidy(est2, conf.int = TRUE) 
+# add clustered SEs (also by month)
+est2 <- felm(Ozone ~ Temp + Wind + Solar.R | Month | 0 | Month, airquality)
+
+# summarize model fit with tidiers
+tidy(est2, conf.int = TRUE)
 tidy(est2, conf.int = TRUE, se.type = "cluster")
 tidy(est2, conf.int = TRUE, se.type = "robust")
 tidy(est2, conf.int = TRUE, se.type = "iid")
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=augment]{augment()}}, \code{\link[lfe:felm]{lfe::felm()}}

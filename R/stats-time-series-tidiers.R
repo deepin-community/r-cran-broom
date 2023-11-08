@@ -16,6 +16,7 @@
 #'
 #' z <- ts(matrix(rnorm(300), 100, 3), start = c(1961, 1), frequency = 12)
 #' colnames(z) <- c("Aa", "Bb", "Cc")
+#'
 #' tidy(z)
 #' @export
 #' @seealso [tidy()], [stats::ts()]
@@ -71,7 +72,7 @@ tidy.acf <- function(x, ...) {
 #'
 #' @evalRd return_tidy("freq", "spec")
 #'
-#' @examples
+#' @examplesIf rlang::is_installed("ggplot2")
 #'
 #' spc <- spectrum(lh)
 #' tidy(spc)

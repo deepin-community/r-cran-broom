@@ -42,10 +42,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Augment accepts a model object and a dataset and adds
@@ -75,14 +78,11 @@ cases, augment tries to reconstruct the original data based on the model
 object with varying degrees of success.
 
 The augmented dataset is always returned as a \link[tibble:tibble]{tibble::tibble} with the
-\strong{same number of rows} as the passed dataset. This means that the
-passed data must be coercible to a tibble. At this time, tibbles do not
-support matrix-columns. This means you should not specify a matrix
-of covariates in a model formula during the original model fitting
-process, and that \code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}} and
-\code{\link[survival:Surv]{survival::Surv()}} objects are not supported in input data. If you
-encounter errors, try explicitly passing a tibble, or fitting the original
-model on data in a tibble.
+\strong{same number of rows} as the passed dataset. This means that the passed
+data must be coercible to a tibble. If a predictor enters the model as part
+of a matrix of covariates, such as when the model formula uses
+\code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}}, or \code{\link[survival:Surv]{survival::Surv()}}, it is represented
+as a matrix column.
 
 We are in the process of defining behaviors for models fit with various
 \code{na.action} arguments, but make no guarantees about behavior when data is
@@ -105,6 +105,7 @@ When \code{newdata} is supplied, only returns \code{.fitted}, \code{.resid} and
 \code{.se.fit} columns.
 }
 \examples{
+\dontshow{if (rlang::is_installed("ggplot2")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 library(ggplot2)
 library(dplyr)
@@ -121,9 +122,9 @@ ggplot(d, aes(estimate, term, xmin = conf.low, xmax = conf.high, height = 0)) +
   geom_point() +
   geom_vline(xintercept = 0, lty = 4) +
   geom_errorbarh()
-  
-# Aside: There are tidy() and glance() methods for lm.summary objects too. 
-# This can be useful when you want to conserve memory by converting large lm 
+
+# aside: There are tidy() and glance() methods for lm.summary objects too.
+# this can be useful when you want to conserve memory by converting large lm
 # objects into their leaner summary.lm equivalents.
 s <- summary(mod)
 tidy(s, conf.int = TRUE)
@@ -139,18 +140,21 @@ newdata <- mtcars \%>\%
 augment(mod, newdata = newdata)
 
 # ggplot2 example where we also construct 95\% prediction interval
-mod2 <- lm(mpg ~ wt, data = mtcars) ## simpler bivariate model since we're plotting in 2D
+
+# simpler bivariate model since we're plotting in 2D
+mod2 <- lm(mpg ~ wt, data = mtcars)
 
 au <- augment(mod2, newdata = newdata, interval = "prediction")
 
-ggplot(au, aes(wt, mpg)) + 
+ggplot(au, aes(wt, mpg)) +
   geom_point() +
-  geom_line(aes(y = .fitted)) + 
+  geom_line(aes(y = .fitted)) +
   geom_ribbon(aes(ymin = .lower, ymax = .upper), col = NA, alpha = 0.3)
 
 # predict on new data without outcome variable. Output does not include .resid
 newdata <- newdata \%>\%
   select(-mpg)
+
 augment(mod, newdata = newdata)
 
 au <- augment(mod, data = mtcars)
@@ -162,6 +166,7 @@ ggplot(au, aes(.hat, .std.resid)) +
   geom_smooth(se = FALSE)
 
 plot(mod, which = 6)
+
 ggplot(au, aes(.hat, .cooksd)) +
   geom_vline(xintercept = 0, colour = NA) +
   geom_abline(slope = seq(0, 3, by = 0.5), colour = "white") +
@@ -172,7 +177,9 @@ ggplot(au, aes(.hat, .cooksd)) +
 a <- matrix(rnorm(20), nrow = 10)
 b <- a + rnorm(length(a))
 result <- lm(b ~ a)
+
 tidy(result)
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \link[stats:na.action]{stats::na.action}

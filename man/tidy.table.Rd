@@ -14,10 +14,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \value{
 A \link[tibble:tibble]{tibble::tibble} in long-form containing frequency information
@@ -35,9 +38,7 @@ specify which components to return.
 Deprecated. Please use \code{\link[tibble:as_tibble]{tibble::as_tibble()}} instead.
 }
 \details{
-Directly calls \code{\link[tibble:as_tibble]{tibble::as_tibble()}} on a \link[base:table]{base::table} object, which
-does the same things as \code{\link[base:table]{base::as.data.frame.table()}} but also gives the
-returned object \link[tibble:tibble]{tibble::tibble} class.
+Directly calls \code{\link[tibble:as_tibble]{tibble::as_tibble()}} on a \link[base:table]{base::table} object.
 }
 \seealso{
 \code{\link[tibble:as_tibble]{tibble::as_tibble.table()}}

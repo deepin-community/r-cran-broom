@@ -19,10 +19,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Glance accepts a model object and returns a \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -45,8 +48,9 @@ that no longer have a well-defined value are filled in with an \code{NA}
 of the appropriate type.
 }
 \examples{
-if (requireNamespace("survey", quietly = TRUE)) {
+\dontshow{if (rlang::is_installed("survey")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
+# load libraries for models and data
 library(survey)
 
 set.seed(123)
@@ -63,16 +67,14 @@ dstrat <-
   )
 
 # model
-m <- survey::svyglm(
+m <- svyglm(
   formula = sch.wide ~ ell + meals + mobility,
   design = dstrat,
   family = quasibinomial()
 )
 
 glance(m)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \references{
 Lumley T, Scott A (2015). AIC and BIC for modelling with complex

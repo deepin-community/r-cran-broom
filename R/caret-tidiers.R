@@ -17,40 +17,39 @@
 #'   p.value = "P-value for accuracy and kappa statistics."
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("caret", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("caret")
 #'
+#' # load libraries for models and data
 #' library(caret)
 #'
 #' set.seed(27)
 #'
+#' # generate data
 #' two_class_sample1 <- as.factor(sample(letters[1:2], 100, TRUE))
 #' two_class_sample2 <- as.factor(sample(letters[1:2], 100, TRUE))
 #'
-#' two_class_cm <- caret::confusionMatrix(
+#' two_class_cm <- confusionMatrix(
 #'   two_class_sample1,
 #'   two_class_sample2
 #' )
 #'
+#' # summarize model fit with tidiers
 #' tidy(two_class_cm)
 #' tidy(two_class_cm, by_class = FALSE)
 #'
 #' # multiclass example
-#'
 #' six_class_sample1 <- as.factor(sample(letters[1:6], 100, TRUE))
 #' six_class_sample2 <- as.factor(sample(letters[1:6], 100, TRUE))
 #'
-#' six_class_cm <- caret::confusionMatrix(
+#' six_class_cm <- confusionMatrix(
 #'   six_class_sample1,
 #'   six_class_sample2
 #' )
 #'
+#' # summarize model fit with tidiers
 #' tidy(six_class_cm)
 #' tidy(six_class_cm, by_class = FALSE)
-#' 
-#' }
-#' 
+#'
 #' @aliases caret_tidiers confusionMatrix_tidiers
 #' @export
 #' @seealso [tidy()], [caret::confusionMatrix()]
@@ -78,8 +77,7 @@ tidy.confusionMatrix <- function(x, by_class = TRUE, ...) {
         cm$AccuracyPValue, NA, cm$McnemarPValue,
         rep(NA, length(terms) - 3)
       )
-    }
-    else {
+    } else {
       # case when there are more than 2 classes
       classes <-
         x$byClass %>%

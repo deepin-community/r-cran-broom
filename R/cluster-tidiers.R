@@ -8,9 +8,9 @@
 #'
 #' @evalRd return_tidy(
 #'   size = "Size of each cluster.",
-#'   max.diss = "Maximal dissimilarity between the observations in the 
+#'   max.diss = "Maximal dissimilarity between the observations in the
 #'     cluster and that cluster's medoid.",
-#'   avg.diss = "Average dissimilarity between the observations in the 
+#'   avg.diss = "Average dissimilarity between the observations in the
 #'     cluster and that cluster's medoid.",
 #'   diameter = "Diameter of the cluster.",
 #'   separation = "Separation of the cluster.",
@@ -24,18 +24,20 @@
 #' @export
 #' @seealso [tidy()], [cluster::pam()]
 #' @family pam tidiers
-#' @examples
+# skip running examples - occasionally over CRAN check time limit
+#' @examplesIf (rlang::is_installed(c("cluster", "modeldata", "ggplot2")) && identical(Sys.getenv("NOT_CRAN"), "true"))
 #'
-#' \dontrun{
+#' # load libraries for models and data
 #' library(dplyr)
 #' library(ggplot2)
 #' library(cluster)
 #' library(modeldata)
 #' data(hpc_data)
-#' 
+#'
 #' x <- hpc_data[, 2:5]
 #' p <- pam(x, k = 4)
 #'
+#' # summarize model fit with tidiers + visualization
 #' tidy(p)
 #' glance(p)
 #' augment(p, x)
@@ -44,8 +46,7 @@
 #'   ggplot(aes(compounds, input_fields)) +
 #'   geom_point(aes(color = .cluster)) +
 #'   geom_text(aes(label = cluster), data = tidy(p), size = 10)
-#' }   
-#'   
+#'
 tidy.pam <- function(x, col.names = paste0("x", 1:ncol(x$medoids)), ...) {
   as_tibble(x$clusinfo) %>%
     mutate(
@@ -72,6 +73,8 @@ tidy.pam <- function(x, col.names = paste0("x", 1:ncol(x$medoids)), ...) {
 #' @family pam tidiers
 #'
 augment.pam <- function(x, data = NULL, ...) {
+  check_ellipses("newdata", "augment", "pam", ...)
+
   if (is.null(data)) {
     data <- x$data
   }

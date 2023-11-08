@@ -14,10 +14,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Glance accepts a model object and returns a \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -43,8 +46,11 @@ of the appropriate type.
 
 set.seed(123)
 
-# data
-m1 <- dplyr::tibble(
+# generate data
+library(dplyr)
+library(purrr)
+
+m1 <- tibble(
   v1 = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 4, 5, 6),
   v2 = c(1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 3, 4, 3, 3, 3, 4, 6, 5),
   v3 = c(3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 4, 6),
@@ -54,11 +60,11 @@ m1 <- dplyr::tibble(
 )
 
 # new data
-m2 <- purrr::map_dfr(m1, rev)
+m2 <- map_dfr(m1, rev)
 
 # factor analysis objects
-fit1 <- stats::factanal(m1, factors = 3, scores = "Bartlett")
-fit2 <- stats::factanal(m1, factors = 3, scores = "regression")
+fit1 <- factanal(m1, factors = 3, scores = "Bartlett")
+fit2 <- factanal(m1, factors = 3, scores = "regression")
 
 # tidying the object
 tidy(fit1)
@@ -71,6 +77,7 @@ augment(fit2)
 # augmented dataframe (with new data)
 augment(fit1, data = m2)
 augment(fit2, data = m2)
+
 }
 \seealso{
 \code{\link[=glance]{glance()}}, \code{\link[stats:factanal]{stats::factanal()}}

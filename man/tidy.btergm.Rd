@@ -23,10 +23,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -39,6 +42,37 @@ specify which components to return.
 This method tidies the coefficients of a bootstrapped
 temporal exponential random graph model estimated with the \pkg{xergm}.
 It simply returns the coefficients and their confidence intervals.
+}
+\examples{
+\dontshow{if ((rlang::is_installed("btergm") & rlang::is_installed("network"))) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+
+library(btergm)
+library(network)
+
+set.seed(5)
+
+# create 10 random networks with 10 actors
+networks <- list()
+for (i in 1:10) {
+  mat <- matrix(rbinom(100, 1, .25), nrow = 10, ncol = 10)
+  diag(mat) <- 0
+  nw <- network(mat)
+  networks[[i]] <- nw
+}
+
+# create 10 matrices as covariates
+covariates <- list()
+for (i in 1:10) {
+  mat <- matrix(rnorm(100), nrow = 10, ncol = 10)
+  covariates[[i]] <- mat
+}
+
+# fit the model
+mod <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100)
+
+# summarize model fit with tidiers
+tidy(mod)
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[btergm:btergm]{btergm::btergm()}}

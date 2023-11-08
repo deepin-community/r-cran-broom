@@ -7,28 +7,30 @@
 #'
 #' @evalRd return_tidy(regression = TRUE)
 #'
-#' @examples
-#' 
-#' if (requireNamespace("bbmle", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("bbmle")
 #'
+#' # load libraries for models and data
 #' library(bbmle)
 #'
+#' # generate data
 #' x <- 0:10
 #' y <- c(26, 17, 13, 12, 20, 5, 9, 8, 5, 4, 8)
 #' d <- data.frame(x, y)
 #'
+#' # fit model
 #' fit <- mle2(y ~ dpois(lambda = ymean),
 #'   start = list(ymean = mean(y)), data = d
 #' )
 #'
+#' # summarize model fit with tidiers
 #' tidy(fit)
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @seealso [tidy()], [bbmle::mle2()], [tidy_optim()]
 #' @aliases mle2_tidiers bbmle_tidiers
 tidy.mle2 <- function(x, conf.int = FALSE, conf.level = .95, ...) {
+  check_ellipses("exponentiate", "tidy", "mle2", ...)
+
   co <- bbmle::coef(bbmle::summary(x))
   ret <- ret <- as_tidy_tibble(
     co,
@@ -36,7 +38,6 @@ tidy.mle2 <- function(x, conf.int = FALSE, conf.level = .95, ...) {
   )
 
   if (conf.int) {
-
     # can't use broom_confint / broom_confint_terms due to
     # some sort of S4 object dispatch thing
 
