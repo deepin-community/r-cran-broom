@@ -2,30 +2,53 @@
 #' @template title_desc_tidy
 #'
 #' @param x A `svyolr` object returned from [survey::svyolr()].
-#' @inherit tidy.polr params details
+#' @template param_confint
+#' @template param_exponentiate
+#' @template param_unused_dots
+#'
+#' @details
+#'
+#' The `tidy.svyolr()` tidier is a light wrapper around
+#' [tidy.polr()]. However, the implementation for p-value calculation
+#' in [tidy.polr()] is both computationally intensive and specific to that
+#' model, so the `p.values` argument to `tidy.svyolr()` is currently ignored,
+#' and will raise a warning when passed.
+#'
+#' @examplesIf rlang::is_installed("survey") && rlang::is_installed("MASS")
+#' library(broom)
+#' library(survey)
+#'
+#' data(api)
+#' dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+#' dclus1 <- update(dclus1, mealcat = cut(meals, c(0, 25, 50, 75, 100)))
+#'
+#' m <- svyolr(mealcat ~ avg.ed + mobility + stype, design = dclus1)
+#'
+#' m
+#'
+#' tidy(m, conf.int = TRUE)
 #'
 #' @export
 #'
-#' @examples
-#' 
-#' if (requireNamespace("MASS", quietly = TRUE)) {
-#'
-#' library(MASS)
-#'
-#' fit <- polr(Sat ~ Infl + Type + Cont, weights = Freq, data = housing)
-#'
-#' tidy(fit, exponentiate = TRUE, conf.int = TRUE)
-#' glance(fit)
-#' 
-#' }
-#' 
 #' @evalRd return_tidy(regression = TRUE)
 #'
 #' @aliases svyolr_tidiers
 #' @export
 #' @seealso [tidy], [survey::svyolr()]
 #' @family ordinal tidiers
-tidy.svyolr <- tidy.polr
+tidy.svyolr <- function(x, conf.int = FALSE, conf.level = 0.95,
+                        exponentiate = FALSE, ...) {
+  check_ellipses("p.values", "tidy", "svyolr", ...)
+
+  return(
+    tidy.polr(
+      x,
+      conf.int = conf.int,
+      conf.level = conf.level,
+      exponentiate = exponentiate
+    )
+  )
+}
 
 #' @templateVar class svyolr
 #' @template title_desc_glance
@@ -103,9 +126,9 @@ tidy.svyglm <- function(x, conf.int = FALSE, conf.level = 0.95,
 #'   "df.residual"
 #' )
 #'
-#' @examples
-#' if (requireNamespace("survey", quietly = TRUE)) {
-#' 
+#' @examplesIf rlang::is_installed("survey")
+#'
+#' # load libraries for models and data
 #' library(survey)
 #'
 #' set.seed(123)
@@ -122,16 +145,14 @@ tidy.svyglm <- function(x, conf.int = FALSE, conf.level = 0.95,
 #'   )
 #'
 #' # model
-#' m <- survey::svyglm(
+#' m <- svyglm(
 #'   formula = sch.wide ~ ell + meals + mobility,
 #'   design = dstrat,
 #'   family = quasibinomial()
 #' )
 #'
 #' glance(m)
-#' 
-#' }
-#' 
+#'
 #' @references Lumley T, Scott A (2015). AIC and BIC for modelling with complex
 #'   survey data. *Journal of Survey Statistics and Methodology*, 3(1).
 #'
@@ -139,7 +160,6 @@ tidy.svyglm <- function(x, conf.int = FALSE, conf.level = 0.95,
 #' @family lm tidiers
 #' @seealso [survey::svyglm()], [stats::glm()], [survey::anova.svyglm]
 glance.svyglm <- function(x, maximal = x, ...) {
-
   # NOTES:
   #
   # (1) log-likelihood does not apply (returns deviance instead)
@@ -157,6 +177,7 @@ glance.svyglm <- function(x, maximal = x, ...) {
     BIC = stats::BIC(x, maximal = maximal)["BIC"],
     deviance = x$deviance,
     df.residual = x$df.residual,
-    na_types = "rirrri"
+    nobs = stats::nobs(x),
+    na_types = "rirrrii"
   )
 }

@@ -2,7 +2,7 @@
 #' @template title_desc_tidy
 #'
 #' @param x An `anova` object, such as those created by [stats::anova()],
-#'   [car::Anova()], or [car::leveneTest()].
+#'   [car::Anova()], [car::leveneTest()], or [car::linearHypothesis()].
 #' @template param_unused_dots
 #'
 #' @evalRd return_tidy(
@@ -14,26 +14,38 @@
 #'   "p.value"
 #' )
 #'
-#' @details 
+#' @details
 #' The `term` column of an ANOVA table can come with leading or
 #' trailing whitespace, which this tidying method trims.
-#'   
+#'
 #' For documentation on the tidier for [car::leveneTest()] output, see
 #' [tidy.leveneTest()]
 #'
-#' @examples
+#' @examplesIf rlang::is_installed("car")
 #'
+#' # fit models
 #' a <- lm(mpg ~ wt + qsec + disp, mtcars)
 #' b <- lm(mpg ~ wt + qsec, mtcars)
-#' tidy(anova(a, b))
+#'
+#' mod <- anova(a, b)
+#'
+#' # summarize model fit with tidiers
+#' tidy(mod)
+#' glance(mod)
+#'
+#' # car::linearHypothesis() example
+#' library(car)
+#' mod_lht <- linearHypothesis(a, "wt - disp")
+#' tidy(mod_lht)
+#' glance(mod_lht)
+#'
 #' @export
 #' @family anova tidiers
 #' @seealso [tidy()], [stats::anova()], [car::Anova()], [car::leveneTest()]
 tidy.anova <- function(x, ...) {
-
   # car::leveneTest returns an object of class `anova`
-  if (!is.null(attr(x, "heading")) && 
-      isTRUE(grepl("Levene's Test for Homogeneity of Variance", attr(x, "heading")))) {
+  if (!is.null(attr(x, "heading")) &&
+    isTRUE(grepl("Levene's Test for Homogeneity of Variance", attr(x, "heading")))) {
     return(tidy(structure(x, class = c("leveneTest", class(x))), ...))
   }
 
@@ -42,6 +54,7 @@ tidy.anova <- function(x, ...) {
     "AIC" = "AIC", # merMod
     "BIC" = "BIC", # merMod
     "deviance" = "deviance", # merMod
+    "Deviance" = "deviance",
     "logLik" = "logLik", # merMod
     "Df" = "df",
     "Chi.Df" = "df",
@@ -49,11 +62,14 @@ tidy.anova <- function(x, ...) {
     "Mean Sq" = "meansq",
     "F value" = "statistic",
     "Pr(>F)" = "p.value",
-    "Res.Df" = "res.df",
+    "Resid..Dev" = "residual.deviance",
+    "Resid..Df" = "df.residual",
+    "Res.Df" = "df.residual",
     "RSS" = "rss",
     "Sum of Sq" = "sumsq",
     "F" = "statistic",
     "Chisq" = "statistic",
+    "npar" = "npar",
     "P(>|Chi|)" = "p.value",
     "Pr(>|Chi|)" = "p.value",
     "Pr(>Chi)" = "p.value",
@@ -85,10 +101,112 @@ tidy.anova <- function(x, ...) {
 
   colnames(ret) <- dplyr::recode(colnames(ret), !!!renamers)
 
+  # Special catch for car::linearHypothesis
+  x_attr <- attributes(x)
+  ## include "Model 1:", "Model 2:" (stats::anova()) and "mod1:", "mod2:"
+  ## (lme4::anova()), but *exclude* "Models:" (found in lme4::anova() header).
+  ## alternatively, could drop the first line of the header?
+  modstr <- "[Mm]od.*[0-9]+:"
+  mod_lines <- grep(modstr, x_attr$heading, value = TRUE)
+  if (!is.null(x_attr$value)) {
+    if (isTRUE(grepl("^Linear hypothesis", x_attr$heading[[1]]))) {
+      # Drop unrestricted model (not interesting in linear hypothesis tests)
+      # Use formula to subset if available (e.g. with car::linearHypothesis)
+      if (length(mod_lines) != 0) {
+        idx <- sub(".*: ", "", strsplit(mod_lines, "\n")[[1]])
+        idx <- idx != "restricted model"
+        ret <- ret[idx, , drop = FALSE]
+      }
+      hypothesis <- x_attr$heading[grep("=", x_attr$heading)]
+      ret_xtra <- data.frame(
+        term = gsub(" =.*", "", hypothesis),
+        null.value = as.numeric(gsub(".*= ", "", hypothesis)),
+        estimate = x_attr$value,
+        std.error = sqrt(as.numeric(diag(x_attr$vcov)))
+      )
+      row.names(ret_xtra) <- row.names(ret) <- NULL
+      ret_xtra$term <- gsub("  ", " ", ret_xtra$term) ## Occasional, annoying extra space
+      ret <- cbind(ret_xtra, ret) %>%
+        dplyr::select(
+          term, null.value, estimate, std.error, statistic,
+          p.value, dplyr::everything()
+        )
+    } else {
+      ## If model formulas (e.g. from car::linearHypothesis) weren't available,
+      ## just add the term and response columns
+      response <- sub(".*: ", "", strsplit(x_attr$heading[grep("Response", x_attr$heading)], "\n")[[1]])
+      term <- row.names(ret)
+      ret < cbind(cbind(term, ret), response)
+      row.names(ret) <- NULL
+    }
+  } else if ((!"term" %in% colnames(ret)) & length(mod_lines) != 0) {
+    mod_lines <- gsub("\n    ", "", mod_lines)
+    mods <- sub(".*: ", "", strsplit(mod_lines, "\n")[[1]])
+    ret <- cbind(term = mods, ret)
+  } else if ((!"term" %in% colnames(ret)) & !is.null(row.names(ret))) {
+    ret <- cbind(term = row.names(ret), ret)
+    row.names(ret) <- NULL
+  }
+
   if ("term" %in% names(ret)) {
     # if rows had names, strip whitespace in them
     ret <- mutate(ret, term = stringr::str_trim(term))
   }
+
+  as_tibble(ret)
+}
+
+
+#' @templateVar class anova
+#' @template title_desc_glance
+#'
+#' @inherit tidy.anova params examples
+#'
+#' @note
+#' Note that the output of `glance.anova()` will vary depending on the initializing
+#' anova call. In some cases, it will just return an empty data frame. In other
+#' cases, `glance.anova()` may return columns that are also common to
+#' `tidy.anova()`. This is partly to preserve backwards compatibility with early
+#' versions of `broom`, but also because the underlying anova model yields
+#' components that could reasonably be interpreted as goodness-of-fit summaries
+#' too.
+#'
+#' @evalRd return_glance(
+#'   "deviance",
+#'   "df.residual"
+#' )
+#'
+#' @export
+#' @seealso [glance()]
+#' @family anova tidiers
+glance.anova <- function(x, ...) {
+  # we'll only grab a subset of columns (and the "statistic" cols are just for
+  # subsetting rows)
+  renamers <- c(
+    "F" = "statistic",
+    "Chisq" = "statistic",
+    "F value" = "statistic",
+    "Chi.sq" = "statistic",
+    "LR.Chisq" = "statistic",
+    "LR Chisq" = "statistic",
+    "Res.Df" = "df.residual",
+    "RSS" = "deviance" ## Note: note "rss"
+  )
+
+  names(renamers) <- make.names(names(renamers))
+
+  ret <- as_augment_tibble(x)
+  colnames(ret) <- make.names(names(ret))
+
+  colnames(ret) <- dplyr::recode(colnames(ret), !!!renamers)
+
+  if (any(c("deviance", "df.residual") %in% colnames(ret))) {
+    ret <- ret[!is.na(ret$statistic), ]
+    ret <- ret[, c("deviance", "df.residual")]
+  } else {
+    ret <- data.frame()
+  }
+
   as_tibble(ret)
 }
 
@@ -107,9 +225,11 @@ tidy.anova <- function(x, ...) {
 #' tidy(a)
 #' @export
 #' @family anova tidiers
+#' @param intercept A logical indicating whether information on the intercept
+#' ought to be included. Passed to [stats::summary.aov()].
 #' @seealso [tidy()], [stats::aov()]
-tidy.aov <- function(x, ...) {
-  summary(x)[[1]] %>%
+tidy.aov <- function(x, intercept = FALSE, ...) {
+  summary(x, intercept = intercept)[[1]] %>%
     tibble::as_tibble(rownames = "term") %>%
     dplyr::mutate("term" = stringr::str_trim(term)) %>%
     rename2(
@@ -128,7 +248,7 @@ tidy.aov <- function(x, ...) {
 #' @inherit tidy.aov params examples
 #'
 #' @note
-#' Note that `tidy.aov()` now contains the numerator and denominator degrees of 
+#' Note that `tidy.aov()` now contains the numerator and denominator degrees of
 #' freedom, which were included in the output of `glance.aov()` in some
 #' previous versions of the package.
 #'
@@ -145,7 +265,7 @@ tidy.aov <- function(x, ...) {
 #' @family anova tidiers
 glance.aov <- function(x, ...) {
   lm_sum <- summary(lm(x))
-  
+
   as_glance_tibble(
     logLik = as.numeric(stats::logLik(x)),
     AIC = stats::AIC(x),
@@ -155,7 +275,6 @@ glance.aov <- function(x, ...) {
     r.squared = lm_sum$r.squared,
     na_types = "rrrrir"
   )
-  
 }
 
 #' @templateVar class aovlist
@@ -184,7 +303,6 @@ glance.aov <- function(x, ...) {
 #' @family anova tidiers
 #' @seealso [tidy()], [stats::aov()]
 tidy.aovlist <- function(x, ...) {
-
   # must filter out Intercept stratum since it has no dimensions
   if (names(x)[1L] == "(Intercept)") {
     x <- x[-1L]
@@ -244,7 +362,7 @@ tidy.manova <- function(x, test = "Pillai", ...) {
   test.name <- c("pillai", "wilks", "hl", "roy")[test.pos]
 
   as_tidy_tibble(
-    summary(x, test = test, ...)$stats, 
+    summary(x, test = test, ...)$stats,
     new_names = c("df", test.name, "statistic", "num.df", "den.df", "p.value")
   )
 }
@@ -283,9 +401,11 @@ tidy.TukeyHSD <- function(x, ...) {
       null.value <- rep(0, nrow(e))
       e <- cbind(null.value, e)
       as_tidy_tibble(
-        e, 
-        new_names = c("null.value", "estimate", "conf.low", 
-                      "conf.high", "adj.p.value"), 
+        e,
+        new_names = c(
+          "null.value", "estimate", "conf.low",
+          "conf.high", "adj.p.value"
+        ),
         new_column = "contrast"
       )
     },

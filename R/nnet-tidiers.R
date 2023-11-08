@@ -10,41 +10,35 @@
 #'
 #' @evalRd return_tidy("y.value", regression = TRUE)
 #'
-#' @examples
-#' 
-#' if (requireNamespace("nnet", quietly = TRUE)) {
+#' @examplesIf (rlang::is_installed("nnet") & rlang::is_installed("MASS"))
 #'
+#' # load libraries for models and data
 #' library(nnet)
 #' library(MASS)
 #'
 #' example(birthwt)
+#'
 #' bwt.mu <- multinom(low ~ ., bwt)
+#'
 #' tidy(bwt.mu)
 #' glance(bwt.mu)
 #'
-#' #* This model is a truly terrible model
-#' #* but it should show you what the output looks
-#' #* like in a multinomial logistic regression
-#'
+#' # or, for output from a multinomial logistic regression
 #' fit.gear <- multinom(gear ~ mpg + factor(am), data = mtcars)
 #' tidy(fit.gear)
 #' glance(fit.gear)
-#' 
-#' }
-#' 
+#'
 #' @aliases multinom_tidiers nnet_tidiers
 #' @export
 #' @family multinom tidiers
 #' @seealso [tidy()], [nnet::multinom()]
 tidy.multinom <- function(x, conf.int = FALSE, conf.level = .95,
                           exponentiate = FALSE, ...) {
-
-
   # when the response is a matrix, x$lev is null
   if (is.null(x$lev)) {
     n_lev <- ncol(x$residuals)
   } else {
-    n_lev <- length(x$lev) 
+    n_lev <- length(x$lev)
   }
 
   # when the dependent variable has only two levels, there is only one set of
@@ -97,7 +91,7 @@ tidy.multinom <- function(x, conf.int = FALSE, conf.level = .95,
   ret$p.value <- stats::pnorm(abs(ret$statistic), 0, 1, lower.tail = FALSE) * 2
 
   if (conf.int) {
-    ci <- apply(stats::confint(x), 2, function(a) unlist(as.data.frame(a)))
+    ci <- apply(stats::confint(x, level = conf.level), 2, function(a) unlist(as.data.frame(a)))
     ci <- as.data.frame(ci)
     names(ci) <- c("conf.low", "conf.high")
     ret <- cbind(ret, ci)

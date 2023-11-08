@@ -14,10 +14,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Glance accepts a model object and returns a \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -40,21 +43,27 @@ that no longer have a well-defined value are filled in with an \code{NA}
 of the appropriate type.
 }
 \examples{
+\dontshow{if (rlang::is_installed("ggplot2")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
+# fit model
 n <- nls(mpg ~ k * e^wt, data = mtcars, start = list(k = 1, e = 2))
 
+# summarize model fit with tidiers + visualization
 tidy(n)
 augment(n)
 glance(n)
 
 library(ggplot2)
+
 ggplot(augment(n), aes(wt, mpg)) +
   geom_point() +
   geom_line(aes(y = .fitted))
 
 newdata <- head(mtcars)
 newdata$wt <- newdata$wt + 1
+
 augment(n, newdata = newdata)
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \link{tidy}, \code{\link[stats:nls]{stats::nls()}}

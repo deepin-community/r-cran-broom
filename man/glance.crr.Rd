@@ -14,10 +14,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Glance accepts a model object and returns a \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -40,20 +43,23 @@ that no longer have a well-defined value are filled in with an \code{NA}
 of the appropriate type.
 }
 \examples{
-
-if (requireNamespace("cmprsk", quietly = TRUE)) {
+\dontshow{if (rlang::is_installed("cmprsk")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 library(cmprsk)
-lrf_time <- rexp(100) #time to loco-regional failure (lrf)
-lrf_event <- sample(0:2, 100, replace = TRUE) 
+
+# time to loco-regional failure (lrf)
+lrf_time <- rexp(100)
+lrf_event <- sample(0:2, 100, replace = TRUE)
 trt <- sample(0:1, 100, replace = TRUE)
 strt <- sample(1:2, 100, replace = TRUE)
+
+# fit model
 x <- crr(lrf_time, lrf_event, cbind(trt, strt))
+
+# summarize model fit with tidiers
 tidy(x, conf.int = TRUE)
 glance(x)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=glance]{glance()}}, \code{\link[cmprsk:crr]{cmprsk::crr()}}

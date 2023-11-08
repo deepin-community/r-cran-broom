@@ -12,23 +12,20 @@
 #'   "p.value"
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("orcutt", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("orcutt")
 #'
+#' # load libraries for models and data
 #' library(orcutt)
 #'
+#' # fit model and summarize results
 #' reg <- lm(mpg ~ wt + qsec + disp, mtcars)
 #' tidy(reg)
 #'
-#' co <- cochrane.orcutt(reg)
-#' co
 #'
+#' co <- cochrane.orcutt(reg)
 #' tidy(co)
 #' glance(co)
-#' 
-#' }
-#' 
+#'
 #' @aliases orcutt_tidiers
 #' @export
 #' @family orcutt tidiers

@@ -7,7 +7,7 @@
 #'   coefficients from the second-stage or diagnostics tests for
 #'   each endogenous regressor (F-statistics). Defaults to `FALSE`.
 #' @template param_unused_dots
-#' 
+#'
 #' @details This tidier currently only supports `ivreg`-classed objects
 #' outputted by the `AER` package. The `ivreg` package also outputs
 #' objects of class `ivreg`, and will be supported in a later release.
@@ -22,22 +22,22 @@
 #'   regression = TRUE
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("AER", quietly = TRUE)) {
-#' 
+#' @examplesIf rlang::is_installed("AER")
+#'
+#' # load libraries for models and data
 #' library(AER)
 #'
+#' # load data
 #' data("CigarettesSW", package = "AER")
 #'
+#' # fit model
 #' ivr <- ivreg(
 #'   log(packs) ~ income | population,
 #'   data = CigarettesSW,
 #'   subset = year == "1995"
 #' )
 #'
-#' summary(ivr)
-#'
+#' # summarize model fit with tidiers
 #' tidy(ivr)
 #' tidy(ivr, conf.int = TRUE)
 #' tidy(ivr, conf.int = TRUE, instruments = TRUE)
@@ -47,9 +47,7 @@
 #' augment(ivr, newdata = CigarettesSW)
 #'
 #' glance(ivr)
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @seealso [tidy()], [AER::ivreg()]
 #' @family ivreg tidiers
@@ -59,6 +57,7 @@ tidy.ivreg <- function(x,
                        conf.level = 0.95,
                        instruments = FALSE,
                        ...) {
+  check_ellipses("exponentiate", "tidy", "ivreg", ...)
 
   # TODO: documentation on when you get what needs to be updated !!!
 
@@ -121,7 +120,7 @@ augment.ivreg <- function(x, data = model.frame(x), newdata = NULL, ...) {
 #' overidentifying restrictions. Sargan test values are returned as `NA`
 #' if the number of instruments is not greater than the number of
 #' endogenous regressors.
-#' 
+#'
 #' @details This tidier currently only supports `ivreg`-classed objects
 #' outputted by the `AER` package. The `ivreg` package also outputs
 #' objects of class `ivreg`, and will be supported in a later release.
@@ -141,9 +140,8 @@ augment.ivreg <- function(x, data = model.frame(x), newdata = NULL, ...) {
 #' @seealso [glance()], [AER::ivreg()]
 #' @family ivreg tidiers
 glance.ivreg <- function(x, diagnostics = FALSE, ...) {
-
   s <- summary(x, diagnostics = FALSE)
-  
+
   ret <- as_glance_tibble(
     r.squared = s$r.squared,
     adj.r.squared = s$adj.r.squared,
@@ -158,7 +156,7 @@ glance.ivreg <- function(x, diagnostics = FALSE, ...) {
 
   if (diagnostics) {
     s_ <- summary(x, diagnostics = TRUE)
-    
+
     diags <- as_glance_tibble(
       statistic.Sargan = s_$diagnostics["Sargan", "statistic"],
       p.value.Sargan = s_$diagnostics["Sargan", "p-value"],
@@ -166,7 +164,7 @@ glance.ivreg <- function(x, diagnostics = FALSE, ...) {
       p.value.Wu.Hausman = s_$diagnostics["Wu-Hausman", "p-value"],
       na_types = "rrrr"
     )
-    
+
     return(bind_cols(ret, diags))
   }
 

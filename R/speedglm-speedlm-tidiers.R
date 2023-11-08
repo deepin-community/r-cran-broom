@@ -7,31 +7,34 @@
 #'
 #' @evalRd return_tidy(regression = TRUE)
 #'
-#' @examples
-#' 
-#' if (requireNamespace("speedglm", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("speedglm")
 #'
-#' mod <- speedglm::speedlm(mpg ~ wt + qsec, data = mtcars, fitted = TRUE)
+#' # load modeling library
+#' library(speedglm)
 #'
+#' # fit model
+#' mod <- speedlm(mpg ~ wt + qsec, data = mtcars, fitted = TRUE)
+#'
+#' # summarize model fit with tidiers
 #' tidy(mod)
 #' glance(mod)
 #' augment(mod)
-#' 
-#' }
-#' 
+#'
 #' @aliases speedlm_tidiers
 #' @export
 #' @family speedlm tidiers
 #' @seealso [speedglm::speedlm()], [tidy.lm()]
 #' @include stats-lm-tidiers.R
 tidy.speedlm <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
+  check_ellipses("exponentiate", "tidy", "speedlm", ...)
+
   ret <- as_tibble(summary(x)$coefficients, rownames = "term")
   colnames(ret) <- c("term", "estimate", "std.error", "statistic", "p.value")
 
   # summary(x)$coefficients misses rank deficient rows (i.e. coefs that
   # summary.lm() sets to NA), catch them here and add them back
   coefs <- tibble::enframe(stats::coef(x), name = "term", value = "estimate")
-  ret <- left_join(coefs, ret)
+  ret <- left_join(coefs, ret, by = c("term", "estimate"))
 
   if (conf.int) {
     ci <- broom_confint_terms(x, level = conf.level)
@@ -97,7 +100,6 @@ glance.speedlm <- function(x, ...) {
 #' @family speedlm tidiers
 #' @seealso [speedglm::speedlm()]
 augment.speedlm <- function(x, data = model.frame(x), newdata = NULL, ...) {
-
   # this is a hacky way to prevent the following bug:
   #    speedglm::speedglm(hp ~ log(mpg), mtcars, fitted = TRUE)
   # this also protects against the fact that speedlm doesn't save fitted

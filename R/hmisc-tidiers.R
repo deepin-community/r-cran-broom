@@ -21,20 +21,23 @@
 #'   `cor(B, A)`. Only one of these pairs will ever be present in the tidy
 #'   output.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("Hmisc", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed(c("Hmisc", "ggplot2"))
 #'
+#' # load libraries for models and data
 #' library(Hmisc)
 #'
 #' mat <- replicate(52, rnorm(100))
+#'
 #' # add some NAs
 #' mat[sample(length(mat), 2000)] <- NA
-#' # also column names
+#'
+#' # also, column names
 #' colnames(mat) <- c(LETTERS, letters)
 #'
+#' # fit model
 #' rc <- rcorr(mat)
 #'
+#' # summarize model fit with tidiers  + visualization
 #' td <- tidy(rc)
 #' td
 #'
@@ -46,8 +49,6 @@
 #'   geom_point() +
 #'   scale_y_log10()
 #'
-#' }
-#' 
 #' @export
 #' @aliases rcorr_tidiers Hmisc_tidiers
 #' @seealso [tidy()], [Hmisc::rcorr()]

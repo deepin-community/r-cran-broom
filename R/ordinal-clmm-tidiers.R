@@ -6,26 +6,27 @@
 #' @template param_exponentiate
 #' @template param_unused_dots
 #'
-#' @examples
-#' 
-#' if (requireNamespace("ordinal", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("ordinal")
 #'
+#' # load libraries for models and data
 #' library(ordinal)
 #'
+#' # fit model
 #' fit <- clmm(rating ~ temp + contact + (1 | judge), data = wine)
 #'
+#' # summarize model fit with tidiers
 #' tidy(fit)
 #' tidy(fit, conf.int = TRUE, conf.level = 0.9)
 #' tidy(fit, conf.int = TRUE, exponentiate = TRUE)
 #'
 #' glance(fit)
 #'
+#' # ...and again with another model specification
 #' fit2 <- clmm(rating ~ temp + (1 | judge), nominal = ~contact, data = wine)
+#'
 #' tidy(fit2)
 #' glance(fit2)
-#' 
-#' }
-#' 
+#'
 #' @evalRd return_tidy(regression = TRUE)
 #'
 #' @note In `broom 0.7.0` the `coefficient_type` column was renamed to
@@ -41,7 +42,6 @@
 #' @family ordinal tidiers
 tidy.clmm <- function(x, conf.int = FALSE, conf.level = 0.95,
                       exponentiate = FALSE, ...) {
-
   # NOTE: pretty much the same as tidy.clm() except there is no
   # `type` argument to confint.clmm()
 

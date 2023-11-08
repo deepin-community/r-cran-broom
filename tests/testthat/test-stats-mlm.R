@@ -2,6 +2,9 @@ context("stats-mlm")
 
 skip_on_cran()
 
+skip_if_not_installed("modeltests")
+library(modeltests)
+
 fit_mlm <- lm(cbind(mpg, disp) ~ wt, mtcars)
 df_tidy <- tidy(fit_mlm, conf.int = TRUE)
 
@@ -25,7 +28,6 @@ rep_each <- function(x, times) {
 }
 
 test_that("tidy.mlm works", {
-
   # create data
   nob <- 100
   set.seed(1234)

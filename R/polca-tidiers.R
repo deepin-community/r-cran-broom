@@ -12,18 +12,23 @@
 #'   "std.error"
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("poLCA", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed(c("poLCA", "ggplot2"))
 #'
+#' # load libraries for models and data
 #' library(poLCA)
 #' library(dplyr)
 #'
+#' # generate data
 #' data(values)
+#'
 #' f <- cbind(A, B, C, D) ~ 1
+#'
+#' # fit model
 #' M1 <- poLCA(f, values, nclass = 2, verbose = FALSE)
 #'
 #' M1
+#'
+#' # summarize model fit with tidiers + visualization
 #' tidy(M1)
 #' augment(M1)
 #' glance(M1)
@@ -33,19 +38,19 @@
 #' ggplot(tidy(M1), aes(factor(class), estimate, fill = factor(outcome))) +
 #'   geom_bar(stat = "identity", width = 1) +
 #'   facet_wrap(~variable)
-#' ## Three-class model with a single covariate.
 #'
+#' # three-class model with a single covariate.
 #' data(election)
+#'
 #' f2a <- cbind(
 #'   MORALG, CARESG, KNOWG, LEADG, DISHONG, INTELG,
 #'   MORALB, CARESB, KNOWB, LEADB, DISHONB, INTELB
 #' ) ~ PARTY
+#'
 #' nes2a <- poLCA(f2a, election, nclass = 3, nrep = 5, verbose = FALSE)
 #'
 #' td <- tidy(nes2a)
 #' td
-#'
-#' # show
 #'
 #' ggplot(td, aes(outcome, estimate, color = factor(class), group = class)) +
 #'   geom_line() +
@@ -53,17 +58,19 @@
 #'   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 #'
 #' au <- augment(nes2a)
+#'
 #' au
+#'
 #' count(au, .class)
 #'
 #' # if the original data is provided, it leads to NAs in new columns
 #' # for rows that weren't predicted
 #' au2 <- augment(nes2a, data = election)
+#'
 #' au2
+#'
 #' dim(au2)
-#' 
-#' }
-#' 
+#'
 #' @aliases poLCA_tidiers
 #' @export
 #' @seealso [tidy()], [poLCA::poLCA()]
@@ -86,11 +93,12 @@ tidy.poLCA <- function(x, ...) {
   }
 
   probs <- probs %>%
-    mutate(class = utils::type.convert(class))
+    mutate(class = utils::type.convert(class, as.is = TRUE))
 
   probs_se <- purrr::map2_df(x$probs.se, names(x$probs.se), reshape_probs) %>%
     mutate(variable = as.character(variable)) %>%
     mutate_if(is.factor, as.integer)
+
   probs$std.error <- probs_se$value
 
   as_tibble(probs)
@@ -123,6 +131,8 @@ tidy.poLCA <- function(x, ...) {
 #' @seealso [augment()], [poLCA::poLCA()]
 #' @family poLCA tidiers
 augment.poLCA <- function(x, data = NULL, ...) {
+  check_ellipses("newdata", "augment", "poLCA", ...)
+
   indices <- cbind(seq_len(nrow(x$posterior)), x$predclass)
 
   ret <- tibble(

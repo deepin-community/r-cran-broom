@@ -9,15 +9,8 @@
 \arguments{
 \item{x}{A \code{coxph} object returned from \code{\link[survival:coxph]{survival::coxph()}}.}
 
-\item{...}{Additional arguments. Not used. Needed to match generic
-signature only. \strong{Cautionary note:} Misspelled arguments will be
-absorbed in \code{...}, where they will be ignored. If the misspelled
-argument has a default value, the default value will be used.
-For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+\item{...}{For \code{tidy()}, additional arguments passed to \code{summary(x, ...)}.
+Otherwise ignored.}
 }
 \description{
 Glance accepts a model object and returns a \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -40,13 +33,15 @@ that no longer have a well-defined value are filled in with an \code{NA}
 of the appropriate type.
 }
 \examples{
+\dontshow{if (rlang::is_installed(c("survival", "ggplot2"))) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("survival", quietly = TRUE)) {
-
+# load libraries for models and data
 library(survival)
 
+# fit model
 cfit <- coxph(Surv(time, status) ~ age + sex, lung)
 
+# summarize model fit with tidiers
 tidy(cfit)
 tidy(cfit, exponentiate = TRUE)
 
@@ -69,6 +64,7 @@ logan2 <- data.frame(
 logan2$case <- (logan2$occupation == logan2$tocc)
 
 cl <- clogit(case ~ tocc + tocc:education + strata(id), logan2)
+
 tidy(cl)
 glance(cl)
 
@@ -82,9 +78,7 @@ ggplot(risks, aes(age, .fitted, color = sex)) +
 
 ggplot(expected, aes(time, .fitted, color = sex)) +
   geom_point()
-  
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=glance]{glance()}}, \code{\link[survival:coxph]{survival::coxph()}}

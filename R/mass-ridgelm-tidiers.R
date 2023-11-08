@@ -9,16 +9,18 @@
 #'   scale = "Scaling factor of estimated coefficient"
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("MASS", quietly = TRUE)) {
-#' 
+#' @examplesIf rlang::is_installed(c("MASS", "ggplot2"))
+#'
+#' # load libraries for models and data
+#' library(MASS)
 #'
 #' names(longley)[1] <- "y"
-#' fit1 <- MASS::lm.ridge(y ~ ., longley)
+#'
+#' # fit model and summarizd results
+#' fit1 <- lm.ridge(y ~ ., longley)
 #' tidy(fit1)
 #'
-#' fit2 <- MASS::lm.ridge(y ~ ., longley, lambda = seq(0.001, .05, .001))
+#' fit2 <- lm.ridge(y ~ ., longley, lambda = seq(0.001, .05, .001))
 #' td2 <- tidy(fit2)
 #' g2 <- glance(fit2)
 #'
@@ -35,9 +37,7 @@
 #' ggplot(td2, aes(lambda, GCV)) +
 #'   geom_line() +
 #'   geom_vline(xintercept = g2$lambdaGCV, col = "red", lty = 2)
-#'   
-#' }
-#' 
+#'
 #' @export
 #' @aliases ridgelm_tidiers
 #' @family ridgelm tidiers

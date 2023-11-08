@@ -13,31 +13,36 @@
 #'   If you have missing values in your model data, you may need to refit
 #'   the model with `na.action = na.exclude`.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("lm.beta", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("lm.beta")
 #'
+#' # load libraries for models and data
 #' library(lm.beta)
 #'
+#' # fit models
 #' mod <- stats::lm(speed ~ ., data = cars)
 #' std <- lm.beta(mod)
+#'
+#' # summarize model fit with tidiers
 #' tidy(std, conf.int = TRUE)
 #'
+#' # generate data
 #' ctl <- c(4.17, 5.58, 5.18, 6.11, 4.50, 4.61, 5.17, 4.53, 5.33, 5.14)
 #' trt <- c(4.81, 4.17, 4.41, 3.59, 5.87, 3.83, 6.03, 4.89, 4.32, 4.69)
 #' group <- gl(2, 10, 20, labels = c("Ctl", "Trt"))
 #' weight <- c(ctl, trt)
 #'
+#' # fit models
 #' mod2 <- lm(weight ~ group)
-#'
 #' std2 <- lm.beta(mod2)
+#'
+#' # summarize model fit with tidiers
 #' tidy(std2, conf.int = TRUE)
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @family lm tidiers
 tidy.lm.beta <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
+  check_ellipses("exponentiate", "tidy", "lm.beta", ...)
+
   ret <- as_tibble(summary(x)$coefficients, rownames = "term")
   colnames(ret) <- c(
     "term", "estimate", "std_estimate",

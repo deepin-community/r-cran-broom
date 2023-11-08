@@ -1,5 +1,5 @@
 Archive: CRAN
-Bug-Database: http://github.com/tidyverse/broom/issues
-Bug-Submit: https://github.com/tidyverse/broom/issues/new
-Repository: https://github.com/tidyverse/broom.git
-Repository-Browse: https://github.com/tidyverse/broom
+Bug-Database: https://github.com/tidymodels/broom/issues
+Bug-Submit: https://github.com/tidymodels/broom/issues/new
+Repository: https://github.com/tidymodels/broom.git
+Repository-Browse: https://github.com/tidymodels/broom

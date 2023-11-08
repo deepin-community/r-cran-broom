@@ -37,10 +37,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -64,23 +67,24 @@ condition is not met, a message is shown and NA is returned instead of
 p-values.
 }
 \examples{
+\dontshow{if (rlang::is_installed("MASS")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("MASS", quietly = TRUE)) {
-
+# load libraries for models and data
 library(MASS)
 
+# fit model
 fit <- polr(Sat ~ Infl + Type + Cont, weights = Freq, data = housing)
 
+# summarize model fit with tidiers
 tidy(fit, exponentiate = TRUE, conf.int = TRUE)
 
 glance(fit)
 augment(fit, type.predict = "class")
 
 fit2 <- polr(factor(gear) ~ am + mpg + qsec, data = mtcars)
+
 tidy(fit, p.values = TRUE)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \link{tidy}, \code{\link[MASS:polr]{MASS::polr()}}

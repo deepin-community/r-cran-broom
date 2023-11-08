@@ -13,7 +13,9 @@ data(faux.mesa.high)
 
 gest <- ergm(flomarriage ~ edges + absdiff("wealth"))
 gest2 <- ergm(flomarriage ~ edges + absdiff("wealth"), family = "gaussian")
-gest3 <- ergm(faux.mesa.high ~ edges + degree(1:3))
+suppressWarnings({
+  gest3 <- ergm(faux.mesa.high ~ edges + degree(1:3))
+})
 
 test_that("ergm tidier arguments", {
   check_arguments(tidy.ergm)
@@ -21,8 +23,10 @@ test_that("ergm tidier arguments", {
 })
 
 test_that("tidy.ergm", {
+  expect_warning({
   tde <- tidy(gest, conf.int = TRUE, exponentiate = TRUE)
-
+  })
+  
   check_tidy_output(tde)
 
   # regression test for #688
@@ -47,10 +51,9 @@ test_that("glance.ergm", {
   expect_message(
     gl3 <- glance(gest, deviance = TRUE, mcmc = TRUE)
   )
-  
+
   check_glance_outputs(gl)
   check_dims(gl, expected_cols = 9)
   check_dims(gl2, expected_cols = 12)
   check_dims(gl, expected_cols = 9)
-  
 })

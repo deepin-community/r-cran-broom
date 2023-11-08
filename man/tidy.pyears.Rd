@@ -15,10 +15,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -36,11 +39,12 @@ If the \code{data.frame = TRUE} argument is supplied to \code{pyears},
 this is simply the contents of \code{x$data}.
 }
 \examples{
+\dontshow{if (rlang::is_installed("survival")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("survival", quietly = TRUE)) {
-
+# load libraries for models and data
 library(survival)
 
+# generate and format data
 temp.yr <- tcut(mgus$dxyr, 55:92, labels = as.character(55:91))
 temp.age <- tcut(mgus$age, 34:101, labels = as.character(34:100))
 ptime <- ifelse(is.na(mgus$pctime), mgus$futime, mgus$pctime)
@@ -48,17 +52,18 @@ pstat <- ifelse(is.na(mgus$pctime), 0, 1)
 pfit <- pyears(Surv(ptime / 365.25, pstat) ~ temp.yr + temp.age + sex, mgus,
   data.frame = TRUE
 )
+
+# summarize model fit with tidiers
 tidy(pfit)
 glance(pfit)
 
 # if data.frame argument is not given, different information is present in
 # output
 pfit2 <- pyears(Surv(ptime / 365.25, pstat) ~ temp.yr + temp.age + sex, mgus)
+
 tidy(pfit2)
 glance(pfit2)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[survival:pyears]{survival::pyears()}}
