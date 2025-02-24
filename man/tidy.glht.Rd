@@ -17,15 +17,8 @@ interval in the tidied output. Defaults to \code{FALSE}.}
 if \code{conf.int = TRUE}. Must be strictly greater than 0 and less than 1.
 Defaults to 0.95, which corresponds to a 95 percent confidence interval.}
 
-\item{...}{Additional arguments. Not used. Needed to match generic
-signature only. \strong{Cautionary note:} Misspelled arguments will be
-absorbed in \code{...}, where they will be ignored. If the misspelled
-argument has a default value, the default value will be used.
-For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+\item{...}{Additional arguments passed to \code{\link[=summary]{summary()}} and
+\code{\link[=tidy.summary.glht]{tidy.summary.glht()}}.}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -36,9 +29,9 @@ If a model has several distinct types of components, you will need to
 specify which components to return.
 }
 \examples{
+\dontshow{if (rlang::is_installed(c("multcomp", "ggplot2"))) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("multcomp", quietly = TRUE)) {
-
+# load libraries for models and data
 library(multcomp)
 library(ggplot2)
 
@@ -46,11 +39,14 @@ amod <- aov(breaks ~ wool + tension, data = warpbreaks)
 wht <- glht(amod, linfct = mcp(tension = "Tukey"))
 
 tidy(wht)
+
 ggplot(wht, aes(lhs, estimate)) +
   geom_point()
 
 CI <- confint(wht)
+
 tidy(CI)
+
 ggplot(CI, aes(lhs, estimate, ymin = lwr, ymax = upr)) +
   geom_pointrange()
 
@@ -62,9 +58,7 @@ ggplot(mapping = aes(lhs, estimate)) +
 
 cld <- cld(wht)
 tidy(cld)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[multcomp:glht]{multcomp::glht()}}

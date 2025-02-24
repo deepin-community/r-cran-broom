@@ -7,17 +7,20 @@
 #'
 #' @evalRd return_tidy(regression = TRUE)
 #'
-#' @examples
+#' @examplesIf rlang::is_installed("plm")
 #'
-#' if (requireNamespace("plm", quietly = TRUE)) {
-#'
+#' # load libraries for models and data
 #' library(plm)
 #'
+#' # load data
 #' data("Produc", package = "plm")
+#'
+#' # fit model
 #' zz <- plm(log(gsp) ~ log(pcap) + log(pc) + log(emp) + unemp,
 #'   data = Produc, index = c("state", "year")
 #' )
 #'
+#' # summarize model fit with tidiers
 #' summary(zz)
 #'
 #' tidy(zz)
@@ -26,14 +29,14 @@
 #'
 #' augment(zz)
 #' glance(zz)
-#' 
-#' }
-#' 
+#'
 #' @aliases plm_tidiers
 #' @export
 #' @seealso [tidy()], [plm::plm()], [tidy.lm()]
 #' @family plm tidiers
 tidy.plm <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
+  check_ellipses("exponentiate", "tidy", "plm", ...)
+
   s <- summary(x)
 
   ret <- as_tibble(s$coefficients, rownames = "term")

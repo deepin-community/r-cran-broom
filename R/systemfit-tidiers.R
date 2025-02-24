@@ -17,14 +17,14 @@
 #' @details This tidy method works with any model objects of class `systemfit`.
 #'          Default returns a tibble of six columns.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("systemfit", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("systemfit")
 #'
 #' set.seed(27)
 #'
+#' # load libraries for models and data
 #' library(systemfit)
 #'
+#' # generate data
 #' df <- data.frame(
 #'   X = rnorm(100),
 #'   Y = rnorm(100),
@@ -32,13 +32,13 @@
 #'   W = rnorm(100)
 #' )
 #'
+#' # fit model
 #' fit <- systemfit(formula = list(Y ~ Z, W ~ X), data = df, method = "SUR")
-#' tidy(fit)
 #'
+#' # summarize model fit with tidiers
+#' tidy(fit)
 #' tidy(fit, conf.int = TRUE)
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @seealso [tidy()], [systemfit::systemfit()]
 #'
@@ -46,6 +46,8 @@
 #' @aliases systemfit_tidiers
 #'
 tidy.systemfit <- function(x, conf.int = TRUE, conf.level = 0.95, ...) {
+  check_ellipses("exponentiate", "tidy", "systemfit", ...)
+
   ret <- as_tibble(summary(x)$coefficients, rownames = "term")
   colnames(ret) <- c("term", "estimate", "std.error", "statistic", "p.value")
 

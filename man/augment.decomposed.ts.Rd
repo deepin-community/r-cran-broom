@@ -15,10 +15,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \value{
 A \link[tibble:tibble]{tibble::tibble} with one row for each observation in the
@@ -60,37 +63,35 @@ cases, augment tries to reconstruct the original data based on the model
 object with varying degrees of success.
 
 The augmented dataset is always returned as a \link[tibble:tibble]{tibble::tibble} with the
-\strong{same number of rows} as the passed dataset. This means that the
-passed data must be coercible to a tibble. At this time, tibbles do not
-support matrix-columns. This means you should not specify a matrix
-of covariates in a model formula during the original model fitting
-process, and that \code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}} and
-\code{\link[survival:Surv]{survival::Surv()}} objects are not supported in input data. If you
-encounter errors, try explicitly passing a tibble, or fitting the original
-model on data in a tibble.
+\strong{same number of rows} as the passed dataset. This means that the passed
+data must be coercible to a tibble. If a predictor enters the model as part
+of a matrix of covariates, such as when the model formula uses
+\code{\link[splines:ns]{splines::ns()}}, \code{\link[stats:poly]{stats::poly()}}, or \code{\link[survival:Surv]{survival::Surv()}}, it is represented
+as a matrix column.
 
 We are in the process of defining behaviors for models fit with various
 \code{na.action} arguments, but make no guarantees about behavior when data is
 missing at this time.
 }
 \examples{
+\dontshow{if (rlang::is_installed("ggplot2")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-# Time series of temperatures in Nottingham, 1920-1939:
+# time series of temperatures in Nottingham, 1920-1939:
 nottem
 
-# Perform seasonal decomposition on the data with both decompose
+# perform seasonal decomposition on the data with both decompose
 # and stl:
-d1 <- stats::decompose(nottem)
-d2 <- stats::stl(nottem, s.window = "periodic", robust = TRUE)
+d1 <- decompose(nottem)
+d2 <- stl(nottem, s.window = "periodic", robust = TRUE)
 
-# Compare the original series to its decompositions.
+# compare the original series to its decompositions.
 
 cbind(
-  broom::tidy(nottem), broom::augment(d1),
-  broom::augment(d2)
+  tidy(nottem), augment(d1),
+  augment(d2)
 )
 
-# Visually compare seasonal decompositions in tidy data frames.
+# visually compare seasonal decompositions in tidy data frames.
 
 library(tibble)
 library(dplyr)
@@ -98,17 +99,17 @@ library(tidyr)
 library(ggplot2)
 
 decomps <- tibble(
-  # Turn the ts objects into data frames.
+  # turn the ts objects into data frames.
   series = list(as.data.frame(nottem), as.data.frame(nottem)),
-  # Add the models in, one for each row.
+  # add the models in, one for each row.
   decomp = c("decompose", "stl"),
   model = list(d1, d2)
 ) \%>\%
   rowwise() \%>\%
-  # Pull out the fitted data using broom::augment.
+  # pull out the fitted data using broom::augment.
   mutate(augment = list(broom::augment(model))) \%>\%
   ungroup() \%>\%
-  # Unnest the data frames into a tidy arrangement of
+  # unnest the data frames into a tidy arrangement of
   # the series next to its seasonal decomposition, grouped
   # by the method (stl or decompose).
   group_by(decomp) \%>\%
@@ -123,6 +124,7 @@ ggplot(decomps) +
     x = index, y = adjusted, colour = decomp,
     group = decomp
   ))
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=augment]{augment()}}, \code{\link[stats:decompose]{stats::decompose()}}

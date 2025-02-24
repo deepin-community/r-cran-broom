@@ -21,10 +21,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -41,19 +44,23 @@ matrix from \code{rcorr} there may be entries for both the \code{cor(A, B)} and
 output.
 }
 \examples{
+\dontshow{if (rlang::is_installed(c("Hmisc", "ggplot2"))) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("Hmisc", quietly = TRUE)) {
-
+# load libraries for models and data
 library(Hmisc)
 
 mat <- replicate(52, rnorm(100))
+
 # add some NAs
 mat[sample(length(mat), 2000)] <- NA
-# also column names
+
+# also, column names
 colnames(mat) <- c(LETTERS, letters)
 
+# fit model
 rc <- rcorr(mat)
 
+# summarize model fit with tidiers  + visualization
 td <- tidy(rc)
 td
 
@@ -64,9 +71,7 @@ ggplot(td, aes(p.value)) +
 ggplot(td, aes(estimate, p.value)) +
   geom_point() +
   scale_y_log10()
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[Hmisc:rcorr]{Hmisc::rcorr()}}

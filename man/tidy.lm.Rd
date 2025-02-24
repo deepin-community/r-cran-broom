@@ -5,7 +5,7 @@
 \alias{lm_tidiers}
 \title{Tidy a(n) lm object}
 \usage{
-\method{tidy}{lm}(x, conf.int = FALSE, conf.level = 0.95, ...)
+\method{tidy}{lm}(x, conf.int = FALSE, conf.level = 0.95, exponentiate = FALSE, ...)
 }
 \arguments{
 \item{x}{An \code{lm} object created by \code{\link[stats:lm]{stats::lm()}}.}
@@ -17,15 +17,23 @@ interval in the tidied output. Defaults to \code{FALSE}.}
 if \code{conf.int = TRUE}. Must be strictly greater than 0 and less than 1.
 Defaults to 0.95, which corresponds to a 95 percent confidence interval.}
 
+\item{exponentiate}{Logical indicating whether or not to exponentiate the
+the coefficient estimates. This is typical for logistic and multinomial
+regressions, but a bad idea if there is no log or logit link. Defaults
+to \code{FALSE}.}
+
 \item{...}{Additional arguments. Not used. Needed to match generic
 signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -40,6 +48,7 @@ If the linear model is an \code{mlm} object (multiple linear model),
 there is an additional column \code{response}. See \code{\link[=tidy.mlm]{tidy.mlm()}}.
 }
 \examples{
+\dontshow{if (rlang::is_installed("ggplot2")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 library(ggplot2)
 library(dplyr)
@@ -56,9 +65,9 @@ ggplot(d, aes(estimate, term, xmin = conf.low, xmax = conf.high, height = 0)) +
   geom_point() +
   geom_vline(xintercept = 0, lty = 4) +
   geom_errorbarh()
-  
-# Aside: There are tidy() and glance() methods for lm.summary objects too. 
-# This can be useful when you want to conserve memory by converting large lm 
+
+# aside: There are tidy() and glance() methods for lm.summary objects too.
+# this can be useful when you want to conserve memory by converting large lm
 # objects into their leaner summary.lm equivalents.
 s <- summary(mod)
 tidy(s, conf.int = TRUE)
@@ -74,18 +83,21 @@ newdata <- mtcars \%>\%
 augment(mod, newdata = newdata)
 
 # ggplot2 example where we also construct 95\% prediction interval
-mod2 <- lm(mpg ~ wt, data = mtcars) ## simpler bivariate model since we're plotting in 2D
+
+# simpler bivariate model since we're plotting in 2D
+mod2 <- lm(mpg ~ wt, data = mtcars)
 
 au <- augment(mod2, newdata = newdata, interval = "prediction")
 
-ggplot(au, aes(wt, mpg)) + 
+ggplot(au, aes(wt, mpg)) +
   geom_point() +
-  geom_line(aes(y = .fitted)) + 
+  geom_line(aes(y = .fitted)) +
   geom_ribbon(aes(ymin = .lower, ymax = .upper), col = NA, alpha = 0.3)
 
 # predict on new data without outcome variable. Output does not include .resid
 newdata <- newdata \%>\%
   select(-mpg)
+
 augment(mod, newdata = newdata)
 
 au <- augment(mod, data = mtcars)
@@ -97,6 +109,7 @@ ggplot(au, aes(.hat, .std.resid)) +
   geom_smooth(se = FALSE)
 
 plot(mod, which = 6)
+
 ggplot(au, aes(.hat, .cooksd)) +
   geom_vline(xintercept = 0, colour = NA) +
   geom_abline(slope = seq(0, 3, by = 0.5), colour = "white") +
@@ -107,7 +120,9 @@ ggplot(au, aes(.hat, .cooksd)) +
 a <- matrix(rnorm(20), nrow = 10)
 b <- a + rnorm(length(a))
 result <- lm(b ~ a)
+
 tidy(result)
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[stats:summary.lm]{stats::summary.lm()}}

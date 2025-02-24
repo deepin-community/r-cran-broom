@@ -6,22 +6,21 @@
 #'
 #' @evalRd return_tidy("obs", "exp", "N")
 #'
-#' @examples
-#' 
-#' if (requireNamespace("survival", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("survival")
 #'
+#' # load libraries for models and data
 #' library(survival)
 #'
+#' # fit model
 #' s <- survdiff(
 #'   Surv(time, status) ~ pat.karno + strata(inst),
 #'   data = lung
 #' )
 #'
+#' # summarize model fit with tidiers
 #' tidy(s)
 #' glance(s)
-#' 
-#' }
-#' 
+#'
 #' @aliases survdiff_tidiers
 #' @export
 #' @seealso [tidy()], [survival::survdiff()]

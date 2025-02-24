@@ -34,10 +34,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -67,32 +70,32 @@ in the data, or ii) the average of the sample marginal effects. See
 \code{vignette("mfxarticle")} from the \code{mfx} package for more details.
 }
 \examples{
+\dontshow{if (rlang::is_installed("mfx")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-
-if (requireNamespace("mfx", quietly = TRUE)) {
-
-\dontrun{ 
+# load libraries for models and data
 library(mfx)
 
-## Get the marginal effects from a logit regression
+# get the marginal effects from a logit regression
 mod_logmfx <- logitmfx(am ~ cyl + hp + wt, atmean = TRUE, data = mtcars)
+
 tidy(mod_logmfx, conf.int = TRUE)
 
-## Compare with the naive model coefficients of the same logit call (not run)
-# tidy(glm(am ~ cyl + hp + wt, family = binomial, data = mtcars), conf.int = TRUE)
+# compare with the naive model coefficients of the same logit call
+tidy(
+  glm(am ~ cyl + hp + wt, family = binomial, data = mtcars),
+  conf.int = TRUE
+)
 
 augment(mod_logmfx)
 glance(mod_logmfx)
 
-## Another example, this time using probit regression
+# another example, this time using probit regression
 mod_probmfx <- probitmfx(am ~ cyl + hp + wt, atmean = TRUE, data = mtcars)
+
 tidy(mod_probmfx, conf.int = TRUE)
 augment(mod_probmfx)
 glance(mod_probmfx)
-}
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[mfx:logitmfx]{mfx::logitmfx()}}, \code{\link[mfx:negbinmfx]{mfx::negbinmfx()}}, \code{\link[mfx:poissonmfx]{mfx::poissonmfx()}}, \code{\link[mfx:probitmfx]{mfx::probitmfx()}}
@@ -114,8 +117,8 @@ A \code{\link[tibble:tibble]{tibble::tibble()}} with columns:
   \item{statistic}{The value of a T-statistic to use in a hypothesis that the regression term is non-zero.}
   \item{std.error}{The standard error of the regression term.}
   \item{term}{The name of the regression term.}
-  \item{atmean}{TRUE if the marginal effects were originally calculated as 
-  the partial effects for the average observation. If FALSE, then these 
+  \item{atmean}{TRUE if the marginal effects were originally calculated as
+  the partial effects for the average observation. If FALSE, then these
   were instead calculated as average partial effects.}
 
 }

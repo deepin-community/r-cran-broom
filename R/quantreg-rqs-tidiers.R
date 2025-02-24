@@ -20,9 +20,12 @@
 #' @export
 #' @seealso [tidy()], [quantreg::rq()]
 #' @family quantreg tidiers
+#' @inherit tidy.rq examples
 #'
 tidy.rqs <- function(x, se.type = "rank", conf.int = FALSE,
                      conf.level = 0.95, ...) {
+  check_ellipses("exponentiate", "tidy", "rqs", ...)
+
   rq_summary <- suppressWarnings(
     quantreg::summary.rqs(x, se = se.type, alpha = 1 - conf.level, ...)
   )
@@ -59,10 +62,11 @@ glance.rqs <- function(x, ...) {
 #' @export
 #' @seealso [augment], [quantreg::rq()], [quantreg::predict.rqs()]
 #' @family quantreg tidiers
+#' @inherit tidy.rq examples
 augment.rqs <- function(x, data = model.frame(x), newdata, ...) {
   n_tau <- length(x[["tau"]])
   if (missing(newdata) || is.null(newdata)) {
-    original <- data[rep(seq_len(nrow(data)), n_tau), ]
+    original <- data[rep(seq_len(nrow(data)), each = n_tau), , drop = FALSE]
     pred <- predict(x, stepfun = FALSE, ...)
     resid <- residuals(x)
     resid <- setNames(as.data.frame(resid), x[["tau"]])
@@ -82,7 +86,7 @@ augment.rqs <- function(x, data = model.frame(x), newdata, ...) {
       as.data.frame()
     ret <- unrowname(cbind(original, pred[, -1, drop = FALSE]))
   } else {
-    original <- newdata[rep(seq_len(nrow(newdata)), n_tau), ]
+    original <- newdata[rep(seq_len(nrow(newdata)), each = n_tau), , drop = FALSE]
     pred <- predict(x, newdata = newdata, stepfun = FALSE, ...)
     pred <- setNames(as.data.frame(pred), x[["tau"]])
     pred <- pivot_longer(pred,

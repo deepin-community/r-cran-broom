@@ -35,15 +35,15 @@
 #'   components in the original space. The columns are:
 #'
 #'   \item{`row`}{The variable labels (colnames) of the data set on
-#'   which PCA was performed}
-#'   \item{`PC`}{An integer vector indicating the principal component}
+#'   which PCA was performed.}
+#'   \item{`PC`}{An integer vector indicating the principal component.}
 #'   \item{`value`}{The value of the eigenvector (axis score) on the
-#'   indicated principal component}
+#'   indicated principal component.}
 #'
 #'   If `matrix` is `"d"`, `"eigenvalues"` or `"pcs"`, the columns are:
 #'
-#'   \item{`PC`}{An integer vector indicating the principal component}
-#'   \item{`std.dev`}{Standard deviation explained by this PC}
+#'   \item{`PC`}{An integer vector indicating the principal component.}
+#'   \item{`std.dev`}{Standard deviation explained by this PC.}
 #'   \item{`percent`}{Fraction of variation explained by this component
 #'     (a numeric value between 0 and 1).}
 #'   \item{`cumulative`}{Cumulative fraction of variation explained by
@@ -54,7 +54,7 @@
 #'   for information on how to interpret the various tidied matrices. Note
 #'   that SVD is only equivalent to PCA on centered data.
 #'
-#' @examples
+#' @examplesIf rlang::is_installed(c("maps", "ggplot2"))
 #'
 #' pc <- prcomp(USArrests, scale = TRUE)
 #'
@@ -70,6 +70,7 @@
 #' # state map
 #' library(dplyr)
 #' library(ggplot2)
+#' library(maps)
 #'
 #' pc %>%
 #'   tidy(matrix = "samples") %>%
@@ -82,11 +83,13 @@
 #'   ggtitle("Principal components of arrest data")
 #'
 #' au <- augment(pc, data = USArrests)
+#'
 #' au
 #'
 #' ggplot(au, aes(.fittedPC1, .fittedPC2)) +
 #'   geom_point() +
 #'   geom_text(aes(label = .rownames), vjust = 1, hjust = 1)
+#'
 #' @aliases prcomp_tidiers
 #' @export
 #' @seealso [stats::prcomp()], [svd_tidiers]
@@ -110,22 +113,26 @@ tidy.prcomp <- function(x, matrix = "u", ...) {
       new_column = "PC"
     )
   } else if (matrix %in% c("rotation", "variables", "v", "loadings")) {
-    ret <- x$rotation %>% 
-      tibble::as_tibble(rownames = "column") %>% 
-      tidyr::pivot_longer(cols = -"column", 
-                          names_to = "PC", 
-                          values_to = "value")
+    ret <- x$rotation %>%
+      tibble::as_tibble(rownames = "column") %>%
+      tidyr::pivot_longer(
+        cols = -"column",
+        names_to = "PC",
+        values_to = "value"
+      )
     if (is.null(rownames(x$rotation))) ret$column <- as.integer(ret$column)
   } else if (matrix %in% c("x", "samples", "u", "scores")) {
-    ret <- x$x %>% 
-      tibble::as_tibble(rownames = "row") %>% 
-      tidyr::pivot_longer(cols = -"row", 
-                          names_to = "PC", 
-                          values_to = "value")
+    ret <- x$x %>%
+      tibble::as_tibble(rownames = "row") %>%
+      tidyr::pivot_longer(
+        cols = -"row",
+        names_to = "PC",
+        values_to = "value"
+      )
     if (is.null(rownames(x$x))) ret$row <- as.integer(ret$row)
   }
 
-  ## change the PC to a numeric
+  # change the PC to a numeric
   ret <- mutate(ret, PC = as.numeric(stringr::str_replace(PC, "PC", "")))
   as_tibble(ret)
 }

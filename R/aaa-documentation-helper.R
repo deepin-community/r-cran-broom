@@ -1,4 +1,3 @@
-
 # TODO:
 #  - catch errors and throw a warning visible to the user
 #  - warn when custom arg is taking precedence over something well-defined
@@ -32,23 +31,6 @@ return_evalrd <- function(..., .method, .pre = NULL, .post = NULL) {
         glue(
           "Tried to use modeltests documentation for: {not_found} column(s) ",
           "but could not find any."
-        )
-      )
-    }
-
-
-    overwrite <- intersect(
-      names(custom_doc),
-      glos_env$column_glossary$column
-    )
-
-    if (length(overwrite) > 0) {
-      overwritten <- paste(overwrite, collapse = ", ")
-      warning(
-        glue(
-          "Using provided documentation for column: {overwritten} rather than ",
-          "modeltest documentation",
-          call. = FALSE
         )
       )
     }
@@ -134,8 +116,7 @@ return_tidy <- function(..., .pre = NULL, .post = NULL, regression = FALSE) {
   do.call("return_evalrd", args)
 }
 
-return_augment <- function(
-                           ...,
+return_augment <- function(...,
                            .pre = NULL,
                            .post = NULL,
                            .fitted = TRUE,

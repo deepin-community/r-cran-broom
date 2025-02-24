@@ -1,6 +1,160 @@
-# broom 0.7.10
+# broom 1.0.7
 
-To be released as broom 0.7.10.
+* Corrected `nobs` entries in `glance.coxph()` output: the package used to 
+  return `length(object$linear.predictors)` (equal to `n` rather than `nevent`) 
+  and now uses survival's method (#1224).
+
+* Corrected confidence interval values in `tidy.boot()` and addressed errors
+  when bootstrapping confidence intervals for multiple terms (#1212).
+
+* Reverted deprecation of tidiers for objects from the margins package
+  now that the package is back on CRAN (#1220).
+
+* Addressed failure in `tidy.anova()` ahead of upcoming car
+  release (#1215).
+
+* Clarified documentation for a number of cases where dots were
+  documented as unused but actually passed to internal functions 
+  (#1214).
+
+* Addressed error in `augment.betareg()` and `augment.betamfx()` 
+  with `data = NULL` and non-null `newdata` (#1216, #1218).
+
+* `glance.lm()` now returns non-`NA` values for `statistic`, `p.value`, and `df` 
+  for models fitted with a single predictor and no intercept (@jrob95, #1209).
+
+# broom 1.0.6
+
+## New Features
+
+* Added support for `conf.level` in `augment.lm()` (#1191 by `@zietzm`).
+
+* Added support for columns `adj.r.squared` and `npar` in `glance()` method for objects outputted from `mgcv::gam()` (#1172).
+
+## Deprecations
+
+* Soft-deprecated tidiers for margins objects, as the package was archived from CRAN in April 2024. In the case that the package is back on CRAN before the next package release, broom will once again Suggest and test support for the package (#1200).
+
+* Moved forward with deprecation of tidiers for objects from the sp package. See resources linked in [tidymodels/broom#1142](https://github.com/tidymodels/broom/issues/1142) for more information on migration from retiring spatial packages.
+
+## Bug Fixes
+
+* While this broom release contains no changes to the `tidy.survfit()` method for objects from the survival package, the package has bumped the minimum required version for survival. Before survival 3.6-4, `tidy.survfit()` propagated "inconsistent" `n.censor` values from survival for multi-state models (#1195). 
+
+* Corrected confidence interval values for precision components in `tidy.betareg()` output (#1169).
+
+* Fixed bug in tidier for `car::linearHypothesis()` output with long formulas (#1171).
+
+* Corrected coefficient values in `tidy.varest()` output (#1174).
+
+# broom 1.0.5
+
+* `tidy.coxph()` will now pass its ellipses `...` to `summary()` internally (#1151 by `@ste-tuf`).
+
+* Transitioned the deprecation of the `region` argument to `tidy.SpatialPolygonsDataFrame` from a warn- to a hard-deprecation (#1142). 
+
+* Removed maptools and rgeos as Suggested packages ahead of their retirement. sp tidiers will be removed from a future release of the package (#1142).
+
+* Addressed bug in mlogit tidiers where `augment.mlogit()` would fail if supplied a model fitted with a non-default `dfidx()` (#1156 by `@gregmacfarlane`). 
+
+* Addressed bug in ANOVA tidiers where `tidy.anova()` would fail if passed a model with many predictors (#1159 by `@jwilliman`). 
+
+* Addressed warnings in ANOVA tidiers for unrecognized column names `Resid..Df`, `Resid..Dev`, and `Deviance`; those columns will be renamed `df.residual`, `residual.deviance`, and `deviance`, respectively (#1159 by `@jwilliman`).
+
+# broom 1.0.4
+
+* Added an `intercept` argument to `tidy.aov()`, a logical indicating whether to include information on the intercept as the first row of results (#1144 by `@victor-vscn`).
+* Moved forward with soft-deprecation of tidiers for objects from the sp package ahead of the retirement of the rgeos and maptools packages later this year. sp tidiers will be removed from a future release of the package (#1142). 
+* Fixed bug in `augment.glm()` where the `.std.resid` column always contained standardized deviance residuals regardless of the value passed to the `type.residuals` argument (#1147).
+
+# broom 1.0.3
+
+* Addressed test failures on R-devel.
+* Fixed bug in `tidy.multinom()` where the `conf.level` argument would be ignored.
+
+# broom 1.0.2
+
+* The default `data` argument for `augment.coxph()` and `augment.survreg()` has been transitioned from `NULL` to `model.frame(x)` (#1126 by `@capnrefsmmat`).
+* Migrated 'ggplot2' from strong to weak dependency, i.e. moved from `Imports` to `Suggests`.
+* Fixed a bug where `augment()` results would not include residuals when the response term included a function call (#1121, #946, #937, #124).
+
+# broom 1.0.1
+
+* Improves performance of `tidy.lm()` and `tidy.glm()` for full-rank fits (#1112 by `@capnrefsmmat`).
+* Moves forward with deprecation of tidiers for sparse matrices outputted from the Matrix package, initially soft-deprecated in broom 0.5.0. The Matrix tidiers were light wrappers around coercion methods that will now be deprecated from Matrix itself in the upcoming 1.4-2 release. The affected methods are `tidy.sparseMatrix()`, `tidy.dgCMatrix()`, and `tidy.dgTMatrix()`. Note that `tidy.confusionMatrix()`, for relevant objects outputted from the caret package, is unaffected (#1113).
+* `tidy.anova()` works again with `anova` objects from the `lme4` package (broken by addition of the `terms` column in the previous release)
+
+# broom 1.0.0
+
+broom 1.0.0 is the first "production" release of the broom package, and includes a number of notable changes to both functionality and governance.
+
+As of this release, the broom team will be following a set of guidelines that clarify the scope of further development on the package. Given the package's wide use and long history, these guidelines _prioritize backward compatibility_ over internal consistency and completeness. You can read those guidelines [here](https://broom.tidymodels.org/articles/)!
+
+We've also made notable changes to error handling in this release:
+
+* Adds minimal ellipsis checking to warn on commonly misspecified arguments passed through ellipses. Notably:
+    + `tidy()` methods will now warn when supplied an `exponentiate` argument if it will be ignored.
+    + `augment()` methods will now warn when supplied a `newdata` argument if it will be ignored.
+* The warning regarding tidiers only maintained via dispatch to `lm` and `glm`
+  is now displayed only once per session, per unique dispatch. That is, 
+  if a `class_a` object is tidied using a `(g)lm` method, broom will not
+  warn when tidying `class_a` objects for the rest of the session, but if a
+  `class_b` object is tidied using a `(g)lm` method in the same session, broom
+  will warn again (#1101).
+
+Other fixes and improvements:
+
+* Add `exponentiate` argument to `tidy.boot()` (#1039).
+* Update in `tidy.htest()` converting matrix-columns to vector-columns (#1081).
+* Address failures in `tidy.glht()` with `conf.int = TRUE` (#1103).
+* Address failures in `tidy.zoo()` when input data does not have `colnames` 
+  (#1080).
+* Transition tidiers for bivariate linear or spline-based interpolation---using
+  list tidiers to interface with objects from the akima package is now 
+  considered off-label. See the interp package for a FOSS alternative.
+* Address failures in `tidy.svyolr()` when `p.values = TRUE`. Instead of aliasing
+  `tidy.polr()` directly, `tidy.svyolr()` lightly wraps that method and
+  warns if `p.values` is supplied (#1107).
+* Adds a `term` column and introduces support for `car::lht()` output in
+  `tidy.anova()` (#1106 by `@grantmcdermott`).
+* Adds a dedicated `glance.anova` method (which previously dispatched to the    
+  deprecated `glance.data.frame()` tidier, #1106 by `@grantmcdermott`).
+
+# broom 0.8.0
+
+This update makes significant improvements to documentation, fixes a number of bugs, and brings the development flow of the package up to date with other packages in the tidymodels.
+
+In the big picture, this release:
+
+* Makes many improvements to documentation: 
+     - All tidiers now have example code demonstrating usage in their documentation. Tidiers for base packages as well as selected others also include sample code for visualization of results with ggplot2.
+     - Code examples in the documentation largely now follow consistent style---these changes were made largely to reflect the tidyverse style guide, addressing spacing, object naming, and commenting, among other things.
+     - Examples previously marked with `\dontrun` or `\donttest` have been workshopped to run reliably.
+* Clarifies errors and warnings for deprecated and unmaintained tidiers.
+* Ensures that tidiers are placed in files named according to the model-supplying package rather than the model object class for easier navigability of the source code.
+
+### Bug fixes and other improvements
+
+* Fix `glance.fixest` error when model includes only fixed effects and no regressors (`#1018` by `@arcruz0`, `#1088` by `@vincentarelbundock`).
+* Address excessive messaging from `tidy.speedlm` (`#1084` by `@cgoo4`, `#1087` by `@vincentarelbundock`).
+* Add `nobs` column to the output of `glance.svyglm` (`#1085` by `@fschaffner`, `#1086` by `@vincentarelbundock`).
+* Ensure `tidy.prcomp` description entries use consistent punctuation (`#1072` by `@PursuitOfDataScience`).
+* Address breaking changes in `glance.fixest` and `tidy.btergm`.
+* Simplify handling of `MASS::polr` output in the corresponding `tidy` and `augment` methods.
+* Align continuous integration with current standards in tidymodels packages.
+
+# broom 0.7.12
+
+Nearly identical source to broom 0.7.11—updates the maintainer email address to an address listed in other CRAN packages maintained by the same person.
+
+# broom 0.7.11
+
+* Addressed issue with the ordering of original observations in `augment.rqs`. Now function preserves the original `data.frame` names also when the input `data.frame` only has one column (`#1052` by `@ilapros`).
+* Addressed warning from `tidy.rma` when `x$ddf` has length greater than 1 (`#1064` by `@wviechtb`).
+* Fix errors in `glance.lavaan` in anticipation of upcoming `tidyr` release (`#1067` by `@DavisVaughan`).
+* Corrected the confidence interval in `tidy.crr()`. The `tidy.crr(conf.level=)` argument was previously ignored (`#1068` by `@ddsjoberg`).
+
+# broom 0.7.10
 
 * Clarifies error when `pysch::mediate` output is dispatched to `tidy.mediate` (`#1037` by `@LukasWallrich`).
 * Allows user to specify confidence level for `tidy.rma` (`#1041` by `@TarenSanders`)
@@ -605,43 +759,46 @@ Many many thanks to all the following for their thoughtful comments on design,
 bug reports and PRs! The community of broom contributors has been kind,
 supportive and insightful and I look forward to working you all again!
 
-[@atyre2](https://github.com/atyre2),
-[@batpigandme](https://github.com/batpigandme),
-[@bfgray3](https://github.com/bfgray3),
-[@bmannakee](https://github.com/bmannakee),
-[@briatte](https://github.com/briatte),
-[@cawoodjm](https://github.com/cawoodjm),
-[@cimentadaj](https://github.com/cimentadaj),
-[@dan87134](https://github.com/dan87134), [@dgrtwo](https://github.com/dgrtwo),
-[@dmenne](https://github.com/dmenne), [@ekatko1](https://github.com/ekatko1),
-[@ellessenne](https://github.com/ellessenne),
-[@erleholgersen](https://github.com/erleholgersen),
-[@ethchr](https://github.com/ethchr),
-[@Hong-Revo](https://github.com/Hong-Revo),
-[@huftis](https://github.com/huftis),
-[@IndrajeetPatil](https://github.com/IndrajeetPatil),
-[@jacob-long](https://github.com/jacob-long),
-[@jarvisc1](https://github.com/jarvisc1),
-[@jenzopr](https://github.com/jenzopr), [@jgabry](https://github.com/jgabry),
-[@jimhester](https://github.com/jimhester),
-[@josue-rodriguez](https://github.com/josue-rodriguez),
-[@karldw](https://github.com/karldw), [@kfeilich](https://github.com/kfeilich),
-[@larmarange](https://github.com/larmarange),
-[@lboller](https://github.com/lboller),
-[@mariusbarth](https://github.com/mariusbarth),
-[@michaelweylandt](https://github.com/michaelweylandt),
-[@mine-cetinkaya-rundel](https://github.com/mine-cetinkaya-rundel),
-[@mkuehn10](https://github.com/mkuehn10),
-[@mvevans89](https://github.com/mvevans89),
-[@nutterb](https://github.com/nutterb),
-[@ShreyasSingh](https://github.com/ShreyasSingh),
-[@stephlocke](https://github.com/stephlocke),
-[@strengejacke](https://github.com/strengejacke),
-[@topepo](https://github.com/topepo),
-[@willbowditch](https://github.com/willbowditch),
-[@WillemSleegers](https://github.com/WillemSleegers),
-[@wilsonfreitas](https://github.com/wilsonfreitas), and
-[@MatthieuStigler](https://github.com/MatthieuStigler)
+`@atyre2`,
+`@batpigandme`,
+`@bfgray3`,
+`@bmannakee`,
+`@briatte`,
+`@cawoodjm`,
+`@cimentadaj`,
+`@dan87134`,
+`@dgrtwo`,
+`@dmenne`,
+`@ekatko1`,
+`@ellessenne`,
+`@erleholgersen`,
+`@ethchr`,
+`@huftis`,
+`@IndrajeetPatil`,
+`@jacob-long`,
+`@jarvisc1`,
+`@jenzopr`,
+`@jgabry`,
+`@jimhester`,
+`@josue-rodriguez`,
+`@karldw`,
+`@kfeilich`,
+`@larmarange`,
+`@lboller`,
+`@mariusbarth`,
+`@michaelweylandt`,
+`@mine-cetinkaya-rundel`,
+`@mkuehn10`,
+`@mvevans89`,
+`@nutterb`,
+`@ShreyasSingh`,
+`@stephlocke`,
+`@strengejacke`,
+`@topepo`,
+`@willbowditch`,
+`@WillemSleegers`,
+`@wilsonfreitas`, and
+`@MatthieuStigler`.
 
 # broom 0.4.4
 

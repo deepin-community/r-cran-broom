@@ -7,32 +7,33 @@
 #'
 #' @evalRd return_tidy(regression = TRUE)
 #'
-#' @examples
-#' 
-#' if (requireNamespace("survival", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed(c("survival", "ggplot2"))
 #'
+#' # load libraries for models and data
 #' library(survival)
 #'
+#' # fit model
 #' sr <- survreg(
 #'   Surv(futime, fustat) ~ ecog.ps + rx,
 #'   ovarian,
 #'   dist = "exponential"
 #' )
 #'
+#' # summarize model fit with tidiers + visualization
 #' tidy(sr)
 #' augment(sr, ovarian)
 #' glance(sr)
 #'
 #' # coefficient plot
 #' td <- tidy(sr, conf.int = TRUE)
+#'
 #' library(ggplot2)
+#'
 #' ggplot(td, aes(estimate, term)) +
 #'   geom_point() +
 #'   geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0) +
 #'   geom_vline(xintercept = 0)
-#'   
-#' }
-#' 
+#'
 #' @aliases survreg_tidiers
 #' @export
 #' @seealso [tidy()], [survival::survreg()]
@@ -40,13 +41,15 @@
 #' @family survival tidiers
 #'
 tidy.survreg <- function(x, conf.level = .95, conf.int = FALSE, ...) {
+  check_ellipses("exponentiate", "tidy", "survreg", ...)
+
   s <- summary(x)$table
   # If the user requested robust SE in the survreg call, don't return naive SE
   # (The column is not present if robust=FALSE)
   s <- s[, colnames(s) != "(Naive SE)", drop = FALSE]
   nn <- c("estimate", "std.error", "statistic", "p.value")
   ret <- as_tidy_tibble(s, new_names = nn)
-  
+
   if (conf.int) {
     ci <- broom_confint_terms(x, level = conf.level)
     ret <- dplyr::left_join(ret, ci, by = "term")
@@ -72,13 +75,9 @@ tidy.survreg <- function(x, conf.level = .95, conf.int = FALSE, ...) {
 #' @seealso [augment()], [survival::survreg()]
 #' @family survreg tidiers
 #' @family survival tidiers
-augment.survreg <- function(x, data = NULL, newdata = NULL,
+augment.survreg <- function(x, data = model.frame(x), newdata = NULL,
                             type.predict = "response",
                             type.residuals = "response", ...) {
-  if (is.null(data) && is.null(newdata)) {
-    stop("Must specify either `data` or `newdata` argument.", call. = FALSE)
-  }
-
   augment_columns(x, data, newdata,
     type.predict = type.predict,
     type.residuals = type.residuals
@@ -109,7 +108,7 @@ augment.survreg <- function(x, data = NULL, newdata = NULL,
 #' @family survival tidiers
 glance.survreg <- function(x, ...) {
   as_glance_tibble(
-    iter = x$iter, 
+    iter = x$iter,
     df = sum(x$df),
     statistic = 2 * diff(x$loglik),
     logLik = as.numeric(stats::logLik(x)),

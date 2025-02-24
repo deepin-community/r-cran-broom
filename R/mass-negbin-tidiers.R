@@ -15,26 +15,25 @@
 #'   "nobs"
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("MASS", quietly = TRUE)) {
-#' 
+#' @examplesIf rlang::is_installed("MASS")
+#'
+#' # load libraries for models and data
 #' library(MASS)
 #'
-#' r <- glm.nb(Days ~ Sex/(Age + Eth*Lrn), data = quine)
+#' # fit model
+#' r <- glm.nb(Days ~ Sex / (Age + Eth * Lrn), data = quine)
 #'
+#' # summarize model fit with tidiers
 #' tidy(r)
 #' glance(r)
-#' 
-#' }
-#' 
+#'
 #' @aliases glm.nb_tidiers
 #' @family glm.nb tidiers
 #' @seealso [glance()], [MASS::glm.nb()]
 #' @export
 glance.negbin <- function(x, ...) {
   s <- summary(x)
-  
+
   ret <- tibble(
     null.deviance = s$null.deviance,
     df.null = s$df.null,
@@ -45,7 +44,7 @@ glance.negbin <- function(x, ...) {
     df.residual = s$df.residual,
     nobs = stats::nobs(x)
   )
-  
+
   ret
 }
 
@@ -59,33 +58,32 @@ glance.negbin <- function(x, ...) {
 #'
 #' @param x A `glm.nb` object returned by [MASS::glm.nb()].
 #' @template param_confint
-#' @template param_unused_dots
+#' @param ... For `tidy()`, additional arguments passed to [summary()].
+#' Otherwise ignored.
 #'
 #' @family glm.nb tidiers
 #' @seealso [MASS::glm.nb()]
 #' @export
- tidy.negbin <- function(x, conf.int = FALSE, conf.level = 0.95, 
+tidy.negbin <- function(x, conf.int = FALSE, conf.level = 0.95,
                         exponentiate = FALSE, ...) {
   s <- summary(x, ...)
-  
+
   ret <- tibble(
-    term  = row.names(s$coefficients),
-    estimate  = s$coefficients[, 1],
+    term = row.names(s$coefficients),
+    estimate = s$coefficients[, 1],
     std.error = s$coefficients[, 2],
     statistic = s$coefficients[, 3],
-    p.value   = s$coefficients[,4]
+    p.value = s$coefficients[, 4]
   )
-  
+
   if (conf.int) {
     ci <- broom_confint_terms(x, level = conf.level)
     ret <- dplyr::left_join(ret, ci, by = "term")
   }
-  
+
   if (exponentiate) {
     ret <- exponentiate(ret)
   }
-  
+
   ret
- }
- 
- 
+}

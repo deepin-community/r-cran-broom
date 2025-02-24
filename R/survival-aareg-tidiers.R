@@ -17,22 +17,21 @@
 #' @details `robust.se` is only present when `x` was created with
 #'   `dfbeta = TRUE`.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("survival", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("survival")
 #'
+#' # load libraries for models and data
 #' library(survival)
 #'
+#' # fit model
 #' afit <- aareg(
 #'   Surv(time, status) ~ age + sex + ph.ecog,
 #'   data = lung,
 #'   dfbeta = TRUE
 #' )
 #'
+#' # summarize model fit with tidiers
 #' tidy(afit)
-#' 
-#' }
-#' 
+#'
 #' @aliases aareg_tidiers
 #' @export
 #' @seealso [tidy()], [survival::aareg()]
@@ -48,9 +47,9 @@ tidy.aareg <- function(x, ...) {
       "statistic.z", "p.value"
     )
   }
-  
+
   as_tidy_tibble(
-    summary(x)$table, 
+    summary(x)$table,
     new_names = nn
   )
 }

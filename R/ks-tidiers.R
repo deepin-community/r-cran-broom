@@ -10,15 +10,16 @@
 #'   \code{tidyr::pivot_wider(..., names_from = variable, values_from = value)}
 #'   on the output to return to a wide format.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("ks", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed(c("ks", "ggplot2"))
 #'
+#' # load libraries for models and data
 #' library(ks)
 #'
+#' # generate data
 #' dat <- replicate(2, rnorm(100))
 #' k <- kde(dat)
 #'
+#' # summarize model fit with tidiers + visualization
 #' td <- tidy(k)
 #' td
 #'
@@ -41,9 +42,7 @@
 #'
 #' td3 <- tidy(k3)
 #' td3
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @aliases kde_tidiers ks_tidiers
 #' @seealso [tidy()], [ks::kde()]
