@@ -21,15 +21,8 @@ the coefficient estimates. This is typical for logistic and multinomial
 regressions, but a bad idea if there is no log or logit link. Defaults
 to \code{FALSE}.}
 
-\item{...}{Additional arguments. Not used. Needed to match generic
-signature only. \strong{Cautionary note:} Misspelled arguments will be
-absorbed in \code{...}, where they will be ignored. If the misspelled
-argument has a default value, the default value will be used.
-For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+\item{...}{For \code{tidy()}, additional arguments passed to \code{\link[=summary]{summary()}}.
+Otherwise ignored.}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -40,18 +33,18 @@ If a model has several distinct types of components, you will need to
 specify which components to return.
 }
 \examples{
+\dontshow{if (rlang::is_installed("MASS")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("MASS", quietly = TRUE)) {
-
+# load libraries for models and data
 library(MASS)
 
-r <- glm.nb(Days ~ Sex/(Age + Eth*Lrn), data = quine)
+# fit model
+r <- glm.nb(Days ~ Sex / (Age + Eth * Lrn), data = quine)
 
+# summarize model fit with tidiers
 tidy(r)
 glance(r)
-
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[MASS:glm.nb]{MASS::glm.nb()}}

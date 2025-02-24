@@ -7,16 +7,18 @@
 #' @details For tidiers for robust models from the \pkg{MASS} package see
 #'   [tidy.rlm()].
 #'
-#' @examples
+#' @examplesIf rlang::is_installed("robust")
 #'
-#' if (requireNamespace("robust", quietly = TRUE)) {
-#'   library(robust)
-#'   m <- lmRob(mpg ~ wt, data = mtcars)
+#' # load modeling library
+#' library(robust)
 #'
-#'   tidy(m)
-#'   augment(m)
-#'   glance(m)
-#' }
+#' # fit model
+#' m <- lmRob(mpg ~ wt, data = mtcars)
+#'
+#' # summarize model fit with tidiers
+#' tidy(m)
+#' augment(m)
+#' glance(m)
 #'
 #' @aliases robust_tidiers
 #' @export
@@ -43,7 +45,6 @@ tidy.lmRob <- function(x, ...) {
 #' @family robust tidiers
 #' @seealso [robust::lmRob()]
 augment.lmRob <- function(x, data = model.frame(x), newdata = NULL, ...) {
-
   # NOTES on predict.lmRob:
   #   - there's no na.action = na.pass argument
   #   - predict(x, newdata = NULL) gives an error (i.e. newdata either must

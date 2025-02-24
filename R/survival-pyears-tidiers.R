@@ -17,12 +17,12 @@
 #' If the `data.frame = TRUE` argument is supplied to `pyears`,
 #' this is simply the contents of `x$data`.
 #'
-#' @examples
-#' 
-#' if (requireNamespace("survival", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("survival")
 #'
+#' # load libraries for models and data
 #' library(survival)
 #'
+#' # generate and format data
 #' temp.yr <- tcut(mgus$dxyr, 55:92, labels = as.character(55:91))
 #' temp.age <- tcut(mgus$age, 34:101, labels = as.character(34:100))
 #' ptime <- ifelse(is.na(mgus$pctime), mgus$futime, mgus$pctime)
@@ -30,17 +30,18 @@
 #' pfit <- pyears(Surv(ptime / 365.25, pstat) ~ temp.yr + temp.age + sex, mgus,
 #'   data.frame = TRUE
 #' )
+#'
+#' # summarize model fit with tidiers
 #' tidy(pfit)
 #' glance(pfit)
 #'
 #' # if data.frame argument is not given, different information is present in
 #' # output
 #' pfit2 <- pyears(Surv(ptime / 365.25, pstat) ~ temp.yr + temp.age + sex, mgus)
+#'
 #' tidy(pfit2)
 #' glance(pfit2)
-#' 
-#' }
-#' 
+#'
 #' @aliases pyears_tidiers
 #' @export
 #' @seealso [tidy()], [survival::pyears()]

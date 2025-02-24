@@ -2,6 +2,9 @@ context("emmeans")
 
 skip_on_cran()
 
+# Matrix ABI version may differ (#1204)
+skip_if(paste0(R.Version()[c("major", "minor")], collapse = ".") < "4.4.0")
+
 skip_if_not_installed("modeltests")
 library(modeltests)
 
@@ -74,8 +77,8 @@ test_that("summary_emm tidiers work", {
   tdjt <- tidy(joint_tests_summary)
   check_tidy_output(tdjt)
   check_dims(tdjt, 4, 5)
-  
-  
+
+
   glmm <- glmer(
     cbind(incidence, size - incidence) ~ period + (1 | herd),
     data = cbpp, family = binomial
@@ -142,10 +145,11 @@ test_that("tidy.emmGrid for combined contrasts", {
   noise.lm <- lm(noise ~ size * type * side, data = auto.noise)
   noise.emm <- emmeans(noise.lm, ~ size * side * type)
   noise_c.s <- contrast(noise.emm,
-                        method = "consec", 
-                        simple = "each", 
-                        combine = TRUE, 
-                        adjust = "mvt")
+    method = "consec",
+    simple = "each",
+    combine = TRUE,
+    adjust = "mvt"
+  )
   td_noise <- tidy(noise_c.s)
 
   # strict = FALSE needed becasue of factor names and "null.value" column

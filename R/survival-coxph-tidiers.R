@@ -4,7 +4,8 @@
 #' @param x A `coxph` object returned from [survival::coxph()].
 #' @template param_confint
 #' @template param_exponentiate
-#' @template param_unused_dots
+#' @param ... For `tidy()`, additional arguments passed to `summary(x, ...)`.
+#' Otherwise ignored.
 #'
 #' @evalRd return_tidy(
 #'   "estimate",
@@ -13,14 +14,15 @@
 #'   "p.value"
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("survival", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed(c("survival", "ggplot2"))
 #'
+#' # load libraries for models and data
 #' library(survival)
 #'
+#' # fit model
 #' cfit <- coxph(Surv(time, status) ~ age + sex, lung)
 #'
+#' # summarize model fit with tidiers
 #' tidy(cfit)
 #' tidy(cfit, exponentiate = TRUE)
 #'
@@ -43,6 +45,7 @@
 #' logan2$case <- (logan2$occupation == logan2$tocc)
 #'
 #' cl <- clogit(case ~ tocc + tocc:education + strata(id), logan2)
+#'
 #' tidy(cl)
 #' glance(cl)
 #'
@@ -56,9 +59,7 @@
 #'
 #' ggplot(expected, aes(time, .fitted, color = sex)) +
 #'   geom_point()
-#'   
-#' }
-#' 
+#'
 #' @aliases coxph_tidiers
 #' @export
 #' @seealso [tidy()], [survival::coxph()]
@@ -66,8 +67,7 @@
 #' @family survival tidiers
 tidy.coxph <- function(x, exponentiate = FALSE, conf.int = FALSE,
                        conf.level = .95, ...) {
- 
-  s <- summary(x)
+  s <- summary(x, ...)
   co <- stats::coef(s)
 
   if (!is.null(x$frail)) {
@@ -115,13 +115,9 @@ tidy.coxph <- function(x, exponentiate = FALSE, conf.int = FALSE,
 #' @seealso [augment()], [survival::coxph()]
 #' @family coxph tidiers
 #' @family survival tidiers
-augment.coxph <- function(x, data = NULL, newdata = NULL,
+augment.coxph <- function(x, data = model.frame(x), newdata = NULL,
                           type.predict = "lp", type.residuals = "martingale",
                           ...) {
-  if (is.null(data) && is.null(newdata)) {
-    stop("Must specify either `data` or `newdata` argument.", call. = FALSE)
-  }
-
   augment_columns(x, data, newdata,
     type.predict = type.predict,
     type.residuals = type.residuals

@@ -14,17 +14,23 @@
 #'
 #' @evalRd return_tidy(regression = TRUE)
 #'
-#' @examples
-#' 
-#' if (requireNamespace("joineRML", quietly = TRUE)) {
-#' 
+#' @examplesIf rlang::is_installed("joineRML")
+#'
+#' # broom only skips running these examples because the example models take a
+#' # while to generate—they should run just fine, though!
 #' \dontrun{
-#' # Fit a joint model with bivariate longitudinal outcomes
+#'
+#'
+#' # load libraries for models and data
 #' library(joineRML)
+#'
+#' # fit a joint model with bivariate longitudinal outcomes
 #' data(heart.valve)
+#'
 #' hvd <- heart.valve[!is.na(heart.valve$log.grad) &
 #'   !is.na(heart.valve$log.lvmi) &
 #'   heart.valve$num <= 50, ]
+#'
 #' fit <- mjoint(
 #'   formLongFixed = list(
 #'     "grad" = log.grad ~ time + sex + hs,
@@ -40,26 +46,25 @@
 #'   timeVar = "time"
 #' )
 #'
-#' # Extract the survival fixed effects
+#' # extract the survival fixed effects
 #' tidy(fit)
 #'
-#' # Extract the longitudinal fixed effects
+#' # extract the longitudinal fixed effects
 #' tidy(fit, component = "longitudinal")
 #'
-#' # Extract the survival fixed effects with confidence intervals
+#' # extract the survival fixed effects with confidence intervals
 #' tidy(fit, ci = TRUE)
 #'
-#' # Extract the survival fixed effects with confidence intervals based
+#' # extract the survival fixed effects with confidence intervals based
 #' # on bootstrapped standard errors
 #' bSE <- bootSE(fit, nboot = 5, safe.boot = TRUE)
 #' tidy(fit, boot_se = bSE, ci = TRUE)
 #'
-#' # Augment original data with fitted longitudinal values and residuals
+#' # augment original data with fitted longitudinal values and residuals
 #' hvd2 <- augment(fit)
 #'
-#' # Extract model statistics
+#' # extract model statistics
 #' glance(fit)
-#' }
 #' }
 #'
 #' @export
@@ -69,6 +74,8 @@
 #'
 tidy.mjoint <- function(x, component = "survival", conf.int = FALSE,
                         conf.level = 0.95, boot_se = NULL, ...) {
+  check_ellipses("exponentiate", "tidy", "mjoint", ...)
+
   component <- rlang::arg_match(component, c("survival", "longitudinal"))
   if (!is.null(boot_se)) {
     if (!inherits(x = boot_se, "bootSE")) {
@@ -131,6 +138,8 @@ tidy.mjoint <- function(x, component = "survival", conf.int = FALSE,
 #'
 #' @export
 augment.mjoint <- function(x, data = x$data, ...) {
+  check_ellipses("newdata", "augment", "mjoint", ...)
+
   if (is.null(data)) {
     stop(
       "`data` argument is NULL. Try specifying `data` manually.",

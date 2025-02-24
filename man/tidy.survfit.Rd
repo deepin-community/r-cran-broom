@@ -10,15 +10,8 @@
 \arguments{
 \item{x}{An \code{survfit} object returned from \code{\link[survival:survfit]{survival::survfit()}}.}
 
-\item{...}{Additional arguments. Not used. Needed to match generic
-signature only. \strong{Cautionary note:} Misspelled arguments will be
-absorbed in \code{...}, where they will be ignored. If the misspelled
-argument has a default value, the default value will be used.
-For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+\item{...}{For \code{glance.survfit()}, additional arguments passed
+to \code{\link[=summary]{summary()}}. Otherwise ignored.}
 }
 \description{
 Tidy summarizes information about the components of a model.
@@ -29,17 +22,21 @@ If a model has several distinct types of components, you will need to
 specify which components to return.
 }
 \examples{
+\dontshow{if (rlang::is_installed(c("survival", "ggplot2"))) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("survival", quietly = TRUE)) {
-
+# load libraries for models and data
 library(survival)
+
+# fit model
 cfit <- coxph(Surv(time, status) ~ age + sex, lung)
 sfit <- survfit(cfit)
 
+# summarize model fit with tidiers + visualization
 tidy(sfit)
 glance(sfit)
 
 library(ggplot2)
+
 ggplot(tidy(sfit), aes(time, estimate)) +
   geom_line() +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .25)
@@ -48,15 +45,15 @@ ggplot(tidy(sfit), aes(time, estimate)) +
 fitCI <- survfit(Surv(stop, status * as.numeric(event), type = "mstate") ~ 1,
   data = mgus1, subset = (start == 0)
 )
+
 td_multi <- tidy(fitCI)
+
 td_multi
 
 ggplot(td_multi, aes(time, estimate, group = state)) +
   geom_line(aes(color = state)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .25)
-  
-}
-  
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=tidy]{tidy()}}, \code{\link[survival:survfit]{survival::survfit()}}

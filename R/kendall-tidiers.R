@@ -13,15 +13,15 @@
 #'   denominator = "The denominator, which is tau=kendall_score/denominator."
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("Kendall", quietly = TRUE)) {
-#' 
+#' @examplesIf rlang::is_installed("Kendall")
+#'
+#' # load libraries for models and data
 #' library(Kendall)
 #'
 #' A <- c(2.5, 2.5, 2.5, 2.5, 5, 6.5, 6.5, 10, 10, 10, 10, 10, 14, 14, 14, 16, 17)
 #' B <- c(1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2)
 #'
+#' # fit models and summarize results
 #' f_res <- Kendall(A, B)
 #' tidy(f_res)
 #'
@@ -30,9 +30,7 @@
 #'
 #' t_res <- SeasonalMannKendall(ts(A))
 #' tidy(t_res)
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @seealso [tidy()], [Kendall::Kendall()], [Kendall::MannKendall()],
 #'   [Kendall::SeasonalMannKendall()]

@@ -8,20 +8,20 @@
 #'   "term",
 #'   long = "Longitude.",
 #'   lat = "Latitude.",
-#'   .post = "Remaining columns give information on geographic attributes 
+#'   .post = "Remaining columns give information on geographic attributes
 #'     and depend on the inputted map object. See ?maps::map for more information."
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("maps", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed(c("maps", "ggplot2"))
 #'
+#' # load libraries for models and data
 #' library(maps)
 #' library(ggplot2)
-#' 
 #'
 #' ca <- map("county", "ca", plot = FALSE, fill = TRUE)
+#'
 #' tidy(ca)
+#'
 #' qplot(long, lat, data = ca, geom = "polygon", group = group)
 #'
 #' tx <- map("county", "texas", plot = FALSE, fill = TRUE)
@@ -30,9 +30,7 @@
 #'   data = tx, geom = "polygon", group = group,
 #'   colour = I("white")
 #' )
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @seealso [tidy()], [maps::map()]
 #' @aliases maps_tidiers

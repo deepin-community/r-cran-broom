@@ -15,27 +15,30 @@
 #'   "conf.high"
 #' )
 #'
-#' @examples
-#' 
-#' if (requireNamespace("tseries", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("tseries")
 #'
+#' # load libraries for models and data
 #' library(tseries)
 #'
+#' # load data
 #' data(EuStockMarkets)
+#'
+#' # fit model
 #' dax <- diff(log(EuStockMarkets))[, "DAX"]
 #' dax.garch <- garch(dax)
 #' dax.garch
 #'
+#' # summarize model fit with tidiers
 #' tidy(dax.garch)
 #' glance(dax.garch)
-#' 
-#' }
-#' 
+#'
 #' @aliases garch_tidiers
 #' @export
 #' @family garch tidiers
 #' @seealso [tidy()], [tseries::garch()]
 tidy.garch <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
+  check_ellipses("exponentiate", "tidy", "garch", ...)
+
   s <- summary(x)
   co <- s$coef
   nn <- c("estimate", "std.error", "statistic", "p.value")

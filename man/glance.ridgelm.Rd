@@ -14,10 +14,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \description{
 Glance accepts a model object and returns a \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -44,15 +47,18 @@ This is similar to the output of \code{select.ridgelm}, but it is
 returned rather than printed.
 }
 \examples{
+\dontshow{if (rlang::is_installed(c("MASS", "ggplot2"))) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
-if (requireNamespace("MASS", quietly = TRUE)) {
-
+# load libraries for models and data
+library(MASS)
 
 names(longley)[1] <- "y"
-fit1 <- MASS::lm.ridge(y ~ ., longley)
+
+# fit model and summarizd results
+fit1 <- lm.ridge(y ~ ., longley)
 tidy(fit1)
 
-fit2 <- MASS::lm.ridge(y ~ ., longley, lambda = seq(0.001, .05, .001))
+fit2 <- lm.ridge(y ~ ., longley, lambda = seq(0.001, .05, .001))
 td2 <- tidy(fit2)
 g2 <- glance(fit2)
 
@@ -69,9 +75,7 @@ ggplot(td2, aes(lambda, GCV)) +
 ggplot(td2, aes(lambda, GCV)) +
   geom_line() +
   geom_vline(xintercept = g2$lambdaGCV, col = "red", lty = 2)
-  
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=glance]{glance()}}, \code{\link[MASS:lm.ridge]{MASS::select.ridgelm()}}, \code{\link[MASS:lm.ridge]{MASS::lm.ridge()}}

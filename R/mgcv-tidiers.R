@@ -25,19 +25,20 @@
 #'   than `estimate` and `std.error`.
 #'
 #'
-#' @examples
-#' 
-#' if (requireNamespace("mgcv", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed("mgcv")
 #'
-#' g <- mgcv::gam(mpg ~ s(hp) + am + qsec, data = mtcars)
+#' # load libraries for models and data
+#' library(mgcv)
 #'
+#' # fit model
+#' g <- gam(mpg ~ s(hp) + am + qsec, data = mtcars)
+#'
+#' # summarize model fit with tidiers
 #' tidy(g)
 #' tidy(g, parametric = TRUE)
 #' glance(g)
 #' augment(g)
-#' 
-#' }
-#' 
+#'
 #' @export
 #' @aliases mgcv_tidiers gam_tidiers tidy.gam
 #' @family mgcv tidiers
@@ -53,7 +54,7 @@ tidy.gam <- function(x, parametric = FALSE, conf.int = FALSE,
   if (parametric) {
     px <- summary(x)$p.table
     ret <- as_tidy_tibble(
-      px, 
+      px,
       new_names = c("estimate", "std.error", "statistic", "p.value")
     )
     if (conf.int) {
@@ -75,7 +76,7 @@ tidy.gam <- function(x, parametric = FALSE, conf.int = FALSE,
   }
   
   if (exponentiate && parametric) {
-    ret <- exponentiate(ret)  
+    ret <- exponentiate(ret)
   }
   
   ret
@@ -93,7 +94,9 @@ tidy.gam <- function(x, parametric = FALSE, conf.int = FALSE,
 #'   "BIC",
 #'   "deviance",
 #'   "df.residual",
-#'   "nobs"
+#'   "nobs",
+#'   "adj.r.squared",
+#'   "npar"
 #' )
 #'
 #'
@@ -101,6 +104,8 @@ tidy.gam <- function(x, parametric = FALSE, conf.int = FALSE,
 #' @family mgcv tidiers
 #' @seealso [glance()], [mgcv::gam()]
 glance.gam <- function(x, ...) {
+  s <- summary(x)
+  
   as_glance_tibble(
     df = sum(x$edf),
     logLik = as.numeric(stats::logLik(x)),
@@ -109,7 +114,9 @@ glance.gam <- function(x, ...) {
     deviance = stats::deviance(x),
     df.residual = stats::df.residual(x),
     nobs = stats::nobs(x),
-    na_types = "irrrrii"
+    adj.r.squared = s$r.sq,
+    npar = s$np,
+    na_types = "irrrriiri"
   )
 }
 

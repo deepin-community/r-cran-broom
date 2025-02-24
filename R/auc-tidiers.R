@@ -6,14 +6,18 @@
 #'
 #' @evalRd return_tidy("cutoff", "tpr", "fpr")
 #'
-#' @examples
-#' 
-#' if (requireNamespace("AUC", quietly = TRUE)) {
+#' @examplesIf rlang::is_installed(c("AUC", "ggplot2"))
 #'
+#' # load libraries for models and data
 #' library(AUC)
+#'
+#' # load data
 #' data(churn)
+#'
+#' # fit model
 #' r <- roc(churn$predictions, churn$labels)
 #'
+#' # summarize with tidiers + visualization
 #' td <- tidy(r)
 #' td
 #'
@@ -23,7 +27,6 @@
 #'   geom_line()
 #'
 #' # compare the ROC curves for two prediction algorithms
-#'
 #' library(dplyr)
 #' library(tidyr)
 #'
@@ -38,9 +41,7 @@
 #'
 #' ggplot(rocs, aes(fpr, tpr, color = algorithm)) +
 #'   geom_line()
-#'   
-#' }
-#' 
+#'
 #' @export
 #' @aliases auc_tidiers roc_tidiers
 #' @seealso [tidy()], [AUC::roc()]

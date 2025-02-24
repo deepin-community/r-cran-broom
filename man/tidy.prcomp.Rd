@@ -27,10 +27,13 @@ signature only. \strong{Cautionary note:} Misspelled arguments will be
 absorbed in \code{...}, where they will be ignored. If the misspelled
 argument has a default value, the default value will be used.
 For example, if you pass \code{conf.lvel = 0.9}, all computation will
-proceed using \code{conf.level = 0.95}. Additionally, if you pass
-\code{newdata = my_tibble} to an \code{\link[=augment]{augment()}} method that does not
-accept a \code{newdata} argument, it will use the default value for
-the \code{data} argument.}
+proceed using \code{conf.level = 0.95}. Two exceptions here are:
+\itemize{
+\item \code{tidy()} methods will warn when supplied an \code{exponentiate} argument if
+it will be ignored.
+\item \code{augment()} methods will warn when supplied a \code{newdata} argument if it
+will be ignored.
+}}
 }
 \value{
 A \link[tibble:tibble]{tibble::tibble} with columns depending on the component of
@@ -51,15 +54,15 @@ row in the tidied output corresponds to information about the principle
 components in the original space. The columns are:
 
 \item{\code{row}}{The variable labels (colnames) of the data set on
-which PCA was performed}
-\item{\code{PC}}{An integer vector indicating the principal component}
+which PCA was performed.}
+\item{\code{PC}}{An integer vector indicating the principal component.}
 \item{\code{value}}{The value of the eigenvector (axis score) on the
-indicated principal component}
+indicated principal component.}
 
 If \code{matrix} is \code{"d"}, \code{"eigenvalues"} or \code{"pcs"}, the columns are:
 
-\item{\code{PC}}{An integer vector indicating the principal component}
-\item{\code{std.dev}}{Standard deviation explained by this PC}
+\item{\code{PC}}{An integer vector indicating the principal component.}
+\item{\code{std.dev}}{Standard deviation explained by this PC.}
 \item{\code{percent}}{Fraction of variation explained by this component
 (a numeric value between 0 and 1).}
 \item{\code{cumulative}}{Cumulative fraction of variation explained by
@@ -80,6 +83,7 @@ for information on how to interpret the various tidied matrices. Note
 that SVD is only equivalent to PCA on centered data.
 }
 \examples{
+\dontshow{if (rlang::is_installed(c("maps", "ggplot2"))) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 pc <- prcomp(USArrests, scale = TRUE)
 
@@ -95,6 +99,7 @@ tidy(pc, "pcs")
 # state map
 library(dplyr)
 library(ggplot2)
+library(maps)
 
 pc \%>\%
   tidy(matrix = "samples") \%>\%
@@ -107,11 +112,13 @@ pc \%>\%
   ggtitle("Principal components of arrest data")
 
 au <- augment(pc, data = USArrests)
+
 au
 
 ggplot(au, aes(.fittedPC1, .fittedPC2)) +
   geom_point() +
   geom_text(aes(label = .rownames), vjust = 1, hjust = 1)
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[stats:prcomp]{stats::prcomp()}}, \link{svd_tidiers}
